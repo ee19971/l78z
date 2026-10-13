@@ -193,12 +193,51 @@ class _CalendarPageState extends State<CalendarPage> {
           children: [
             _buildHeader(),
             if (_view == CalendarView.month) _buildWeekDays(),
-            SizedBox(height: bodyHeight, child: _buildViewBody(width, bodyHeight)),
+            SizedBox(
+              height: bodyHeight,
+              // 网格切换动画：key = 视图 + 焦点粒度（见 _gridKey），
+              // 换月/换年/换视图换 key → 淡入 + 轻微缩放；月视图里点选
+              // 日期 key 不变 → 不闪。动画期旧网格由 IgnorePointer 挡住
+              // 点击，免得 160ms 内误点到上一屏的日期。
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 160),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeOut,
+                transitionBuilder: (child, animation) {
+                  final isNew = child.key == ValueKey(_gridKey());
+                  final faded = FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(begin: 0.98, end: 1.0)
+                          .animate(animation),
+                      child: child,
+                    ),
+                  );
+                  return isNew ? faded : IgnorePointer(child: faded);
+                },
+                child: KeyedSubtree(
+                  key: ValueKey(_gridKey()),
+                  child: _buildViewBody(width, bodyHeight),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+
+  /// 网格动画的 key：视图 + 该视图的焦点粒度。
+  ///
+  /// 刻意不含月视图的选中日期——点格子选中不该让整屏闪一下；
+  /// 周视图用周起始日（同周内换选中日不闪，跨周是整屏换内容，该闪）。
+  String _gridKey() => switch (_view) {
+        CalendarView.year => 'y${_focusedMonth.year}',
+        CalendarView.month => 'm${_focusedMonth.year}-${_focusedMonth.month}',
+        CalendarView.week => 'w${_weekStart(_selectedDate)}',
+        CalendarView.day =>
+          'd${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}',
+      };
 
   Widget _buildViewBody(double width, double height) {
     switch (_view) {
@@ -312,10 +351,18 @@ class _CalendarPageState extends State<CalendarPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(title,
+                // 标题交叉淡化：换月/换年/换视图时新旧标题快速淡接，
+                // key 用标题文本，同标题的重复 setState 不会重播。
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 150),
+                  child: Text(
+                    title,
+                    key: ValueKey(title),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
                 Text(_viewNames[_view]!,
                     style: Theme.of(context).textTheme.labelSmall),
               ],

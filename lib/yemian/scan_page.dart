@@ -17,6 +17,87 @@ enum ScanMode {
   barcode,
 }
 
+/// 循环流光进度条：4px 圆角底条 + 循环平移的渐变高光，约 1.2s 一轮。
+///
+/// 取代 LinearProgressIndicator 的确定进度条：OCR 的百分比在 stage 之间
+/// 跳变（0 → 5% → 55% → 100%），确定条会一顿一顿；这里改跑无限循环动画，
+/// 真实百分比交给下方进度文本（文本行为不变）。
+class _ShimmerProgress extends StatefulWidget {
+  const _ShimmerProgress();
+
+  @override
+  State<_ShimmerProgress> createState() => _ShimmerProgressState();
+}
+
+class _ShimmerProgressState extends State<_ShimmerProgress>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1200),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+    // _busy 变 false 时本组件整体卸载，repeat 动画随之销毁，无需手动停。
+    return SizedBox(
+      height: 4,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxW = constraints.maxWidth;
+          final streakW = maxW * 0.35;
+          return Stack(
+            clipBehavior: Clip.hardEdge,
+            children: [
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              AnimatedBuilder(
+                animation: _ctrl,
+                builder: (context, _) {
+                  // easeInOut 让高光在两端略作停顿，比匀速扫更有呼吸感。
+                  final t = Curves.easeInOut.transform(_ctrl.value);
+                  // 从完全移出左边界扫到完全移出右边界，一趟全覆盖。
+                  final x = (maxW + streakW) * t - streakW;
+                  return Positioned(
+                    left: x,
+                    top: 0,
+                    bottom: 0,
+                    width: streakW,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        gradient: LinearGradient(
+                          colors: [
+                            color.withValues(alpha: 0),
+                            color.withValues(alpha: 0.85),
+                            color.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
 /// 扫一扫 / 识别页：拍照或选图，然后按需做 OCR 或码解码。
 ///
 /// 不再内置实时相机预览：预览帧分辨率低，二维码和小字都识别不稳，
@@ -286,7 +367,8 @@ class _ScanPageState extends State<ScanPage> {
           ],
           if (_busy) ...[
             const SizedBox(height: 16),
-            LinearProgressIndicator(value: _progress),
+            // 循环流光动画；真实进度仍由下方文本展示，_progress 逻辑未动。
+            const _ShimmerProgress(),
             const SizedBox(height: 8),
             Center(
               child: Text(

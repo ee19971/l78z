@@ -65,6 +65,9 @@ class _HomePageState extends State<HomePage> {
   // 【修复】去掉 final，因为需要 setState 修改它
   AppTab _currentTab = AppTab.home;
 
+  /// 本次切换的方向：1 = 新页从右侧滑入（往右切），-1 = 从左侧滑入。
+  int _slideDir = 1;
+
   /// 【优化】通过枚举直接映射页面，逻辑更清晰
   Widget _getPage(AppTab tab) {
     switch (tab) {
@@ -90,13 +93,45 @@ class _HomePageState extends State<HomePage> {
       // 再往下传，所以子页面 AppBar 内部那层 SafeArea 会看到 padding.top = 0
       // 而不再叠加，不会出现双重空隙。日历页没有自己的 AppBar，以前 body 直接
       // 从屏幕顶端起算，在 Android 15（edge-to-edge 强制开启）上就压到状态栏底下了。
-      body: SafeArea(child: _getPage(_currentTab)),
+      body: SafeArea(
+        // 底部 tab 切换动画：新页从目标方向滑入淡入，旧页向反方向滑出淡出。
+        // transitionBuilder 靠 child 的 key 区分新旧页——等于当前 tab 的是
+        // 新页，其余是旧页；旧页额外包 IgnorePointer，避免 220ms 过渡期间
+        // 误点到还没消失的上一页按钮。
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeOutCubic,
+          transitionBuilder: (child, animation) {
+            final isNew = child.key == ValueKey(_currentTab);
+            final slide = SlideTransition(
+              position: Tween<Offset>(
+                begin: isNew
+                    ? Offset(_slideDir.toDouble(), 0)
+                    : Offset.zero,
+                end: isNew ? Offset.zero : Offset(-_slideDir.toDouble(), 0),
+              ).animate(animation),
+              child: child,
+            );
+            final faded = FadeTransition(opacity: animation, child: slide);
+            return isNew ? faded : IgnorePointer(child: faded);
+          },
+          child: KeyedSubtree(
+            key: ValueKey(_currentTab),
+            child: _getPage(_currentTab),
+          ),
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         // 【修复】使用枚举的 index
         selectedIndex: _currentTab.index,
         onDestinationSelected: (int index) {
           setState(() {
-            _currentTab = AppTab.values[index];
+            // 点当前 tab 不重播动画，只让指示器回弹一下。
+            if (index != _currentTab.index) {
+              _slideDir = index > _currentTab.index ? 1 : -1;
+              _currentTab = AppTab.values[index];
+            }
           });
         },
         // 顺序与 AppTab 枚举保持一致

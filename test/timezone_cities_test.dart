@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:l78z/yemian/timezone_data.dart';
 import 'package:timezone/timezone.dart';
 
-/// 城市表是 80 条硬编码的 IANA 标识，写错一个就是**静默退化**：
+/// 首都表是 73 条硬编码的 IANA 标识，写错一个就是**静默退化**：
 /// 运行时 `getLocation` 抛出会被 [nowIn] 的 try/catch 吞掉，
 /// 时钟悄悄退成本机时间，界面上看不出任何异常。
 /// 这组测试就是拿来做那个兜底 catch 的第二道网。
@@ -12,31 +12,48 @@ void main() {
     expect(timezonesReady, isTrue, reason: 'initTimezones 内部 try/catch 吞了异常');
   });
 
-  test('城市表里每个 IANA 标识都真实存在于 tz 数据库', () {
+  test('首都表里每个 IANA 标识都真实存在于 tz 数据库', () {
     initTimezones();
     expect(kCities, isNotEmpty);
     for (final c in kCities) {
       expect(
         () => getLocation(c.location),
         returnsNormally,
-        reason: '${c.name} → ${c.location} 解析失败',
+        reason: '${c.region} ${c.name} → ${c.location} 解析失败',
       );
     }
   });
 
-  test('城市表没有重复项（同名同位置）', () {
+  test('首都表规模在精选区间，且按五大洲分组', () {
+    expect(kCities.length, inInclusiveRange(60, 80));
+    expect(
+      kContinentCities.keys,
+      ['亚洲', '欧洲', '非洲', '美洲', '大洋洲'],
+    );
+    // 平铺表与分组表必须一致，否则搜索结果和列表会对不上。
+    expect(kCities.length,
+        kContinentCities.values.fold<int>(0, (sum, g) => sum + g.length));
+  });
+
+  test('首都表没有重复项（同名同位置）', () {
     final seen = <String>{};
     for (final c in kCities) {
       final key = '${c.name}|${c.location}';
-      expect(seen.add(key), isTrue, reason: '$key 重复出现在城市表里');
+      expect(seen.add(key), isTrue, reason: '$key 重复出现在首都表里');
     }
   });
 
-  test('中国城市（除港澳台外）都落在 Asia/Shanghai', () {
+  test('中国条目只有北京且落在 Asia/Shanghai', () {
+    final china = [for (final c in kCities) if (c.region == '中国') c];
+    expect(china, hasLength(1));
+    expect(china.single.name, '北京');
+    expect(china.single.location, 'Asia/Shanghai');
+  });
+
+  test('每个首都都挂在自己的国家名下', () {
     for (final c in kCities) {
-      if (c.region != '中国') continue;
-      if (const {'香港', '澳门', '台北'}.contains(c.name)) continue;
-      expect(c.location, 'Asia/Shanghai', reason: '${c.name} 不该有独立时区');
+      expect(c.region, isNotEmpty, reason: '${c.name} 缺国家名');
+      expect(c.name, isNotEmpty);
     }
   });
 
@@ -67,15 +84,31 @@ void main() {
     expect(formatUtcOffset(Duration.zero), 'UTC+0');
   });
 
-  test('未知的时区标识回落到默认城市，不抛异常', () {
+  test('未知的时区标识回落到默认首都，不抛异常', () {
     expect(cityByLocation('Mars/Olympus').name, kDefaultCity.name);
+    expect(cityByLocation('Asia/Shanghai').name, '北京');
   });
 
-  test('搜索：中文名、IANA 名、地区都能命中', () {
+  test('搜索：首都名、国家名、IANA 名都能命中', () {
     expect(searchCities('北京').map((c) => c.name), contains('北京'));
     expect(searchCities('asia/tokyo').map((c) => c.name), contains('东京'));
     expect(searchCities('日本').map((c) => c.name), contains('东京'));
+    expect(searchCities('法国').map((c) => c.name), contains('巴黎'));
     expect(searchCities(''), hasLength(kCities.length));
-    expect(searchCities('不存在的城市'), isEmpty);
+    expect(searchCities('不存在的国家'), isEmpty);
+  });
+
+  test('分组搜索：命中的组保留标题，未命中的组整个消失', () {
+    final groups = searchCitiesGrouped('法国');
+    expect(groups.keys, ['欧洲']);
+    expect(groups['欧洲']!.map((c) => c.name), ['巴黎']);
+
+    // 搜 IANA 前缀跨组命中：亚洲组和美洲组都该在。
+    final wide = searchCitiesGrouped('america/');
+    expect(wide.keys, containsAll(['美洲']));
+    expect(wide['美洲']!.map((c) => c.name), contains('华盛顿'));
+
+    // 空查询返回全部组。
+    expect(searchCitiesGrouped('').keys, kContinentCities.keys);
   });
 }

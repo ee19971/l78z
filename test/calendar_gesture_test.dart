@@ -1,17 +1,19 @@
 // 注意：本文件有 4 个手势测试被标了 skip，箭头切月那个仍然在跑。
 //
+// 【真机结论 2026-10-13】用户真机确认日历左右滑/上下滑**正常**，
+// 因此 skip 纯属测试环境限制，不是产品 bug——保留 skip 仅因这个环境下
+// 测试永远跑不过，取消它只会制造必红的噪声。
+//
 // 诊断结论（2026-10-13）：在 `flutter test` 环境里，对 calendar-pane 做
 // drag、startGesture、以及手动 hitTest + handlePointerEvent，三种方式的
 // 事件都**到不了** pane 上的 Listener——尽管手动 hitTest 在同一个坐标确认
 // path 里包含该 RenderPointerListener，onPointerDown/Move 的计数恒为 0。
+// Listener 是 Flutter 最底层的指针组件，真机不可能整体失效，
+// 故判定为测试环境（AutomatedTestWidgetsFlutterBinding 的事件派发路径）
+// 与该页面的组合问题。
 //
-// Listener 是 Flutter 最底层的指针组件，真机上不可能整体失效，因此判定为
-// 测试环境（AutomatedTestWidgetsFlutterBinding 的事件派发路径）与该页面的
-// 组合问题。但**无真机的情况下无法彻底排除手势真的失效**，所以保留测试：
-//   - 真机上左右滑能换年、上下滑能换月 → 维持 skip，只当测试环境限制；
-//   - 真机上滑不动 → 取消 skip，从 Listener 的事件派发根因继续查。
-//
-// 注：testWidgets 的 skip 只接受 bool，放不了原因字符串，故写在这里。
+// 若哪天真机上滑不动了，取消这 4 个 skip，它们立刻就是验收标准，
+// 然后从 Listener 的事件派发根因查起。
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l78z/yemian/calendar.dart';

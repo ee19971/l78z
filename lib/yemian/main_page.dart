@@ -377,7 +377,14 @@ class _CityPickerSheetState extends State<_CityPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final results = searchCities(_query);
+    // 分组结果展平成混合行：大洲名（String）与首都（CityInfo）交替，
+    // 标题行只在该组有命中时出现。
+    final rows = <Object>[
+      for (final entry in searchCitiesGrouped(_query).entries) ...[
+        entry.key,
+        ...entry.value,
+      ],
+    ];
     // 结果太多时把弹层撑高：给了七成屏，剩下的空间让列表自己滚。
     final sheetHeight = MediaQuery.of(context).size.height * 0.7;
 
@@ -392,7 +399,7 @@ class _CityPickerSheetState extends State<_CityPickerSheet> {
               controller: _ctrl,
               decoration: InputDecoration(
                 isDense: true,
-                hintText: '搜索城市，如 北京、东京、asia',
+                hintText: '搜索国家或首都，如 日本、巴黎、asia',
                 prefixIcon: const Icon(Icons.search, size: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -402,15 +409,33 @@ class _CityPickerSheetState extends State<_CityPickerSheet> {
             ),
           ),
           Expanded(
-            child: results.isEmpty
+            child: rows.isEmpty
                 ? Center(
-                    child: Text('没有匹配「$_query」的城市',
+                    child: Text('没有匹配「$_query」的国家或首都',
                         style: Theme.of(context).textTheme.bodyMedium),
                   )
                 : ListView.builder(
-                    itemCount: results.length,
+                    itemCount: rows.length,
                     itemBuilder: (context, i) {
-                      final c = results[i];
+                      final row = rows[i];
+                      if (row is String) {
+                        // 大洲分组标题：上留白让它和上一组拉开距离。
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                          child: Text(
+                            row,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary,
+                                ),
+                          ),
+                        );
+                      }
+                      final c = row as CityInfo;
                       return ListTile(
                         dense: true,
                         title: Text(c.name),
