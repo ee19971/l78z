@@ -13,11 +13,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'festival_prefs.dart';
 import 'festival_scan.dart';
 import 'festivals.dart';
+import 'onthisday_page.dart';
 import 'scan_page.dart';
 import 'stopwatch_page.dart';
 import 'timezone_data.dart';
 
-/// 主页面：时钟 + 今天 + 三个功能入口。
+/// 主页面：时钟 + 今天 + 四个功能入口。
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -91,34 +92,48 @@ class _MainPageState extends State<MainPage> {
           const SizedBox(height: 12),
           _TodayCard(info: _info, today: _today, next: _nextFestival),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _ActionCard(
-                  icon: Icons.document_scanner,
-                  label: 'OCR 识别',
-                  onTap: () => _push(
-                      const ScanPage(initialMode: ScanMode.ocr)),
+          // IntrinsicHeight：让四个按钮等高（第 4 个标签折两行会更高）。
+          // 直接在 ListView 里用 stretch 会因交叉轴无界而崩溃，必须先经
+          // IntrinsicHeight 把子项高度收敛成有限值再拉伸。
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _ActionCard(
+                    icon: Icons.document_scanner,
+                    label: 'OCR 识别',
+                    onTap: () => _push(
+                        const ScanPage(initialMode: ScanMode.ocr)),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ActionCard(
-                  icon: Icons.qr_code_scanner,
-                  label: '二维码扫描',
-                  onTap: () => _push(
-                      const ScanPage(initialMode: ScanMode.barcode)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ActionCard(
+                    icon: Icons.qr_code_scanner,
+                    label: '二维码扫描',
+                    onTap: () => _push(
+                        const ScanPage(initialMode: ScanMode.barcode)),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ActionCard(
-                  icon: Icons.timer_outlined,
-                  label: '秒表',
-                  onTap: () => _push(const StopwatchPage()),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ActionCard(
+                    icon: Icons.timer_outlined,
+                    label: '秒表',
+                    onTap: () => _push(const StopwatchPage()),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ActionCard(
+                    icon: Icons.history_edu_outlined,
+                    label: '历史上的今天',
+                    onTap: () => _push(const OnThisDayPage()),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
