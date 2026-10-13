@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 桌面小部件配色。accent 与 Flutter 侧默认主题色 #6750A4 一致，
+         这样应用内列表和桌面上的部件看起来像同一个 app。 -->
+    <color name="widget_bg">#FFFFFFFF</color>
+    <color name="widget_text_primary">#FF1C1B1F</color>
+    <color name="widget_text_secondary">#FF49454F</color>
+    <color name="widget_accent">#FF6750A4</color>
+    <color name="widget_accent_soft">#1F6750A4</color>
+
+    <!-- 人生进度四条的取色，与应用内「人生进度」页的四色一致：
+         今天绿、本周蓝、本月橙、本年紫。轨道统一用 12% 黑，
+         深色模式下换成 24% 白（见 values-night）。 -->
+    <color name="widget_bar_day">#FF4CAF50</color>
+    <color name="widget_bar_week">#FF42A5F5</color>
+    <color name="widget_bar_month">#FFFF8A65</color>
+    <color name="widget_bar_year">#FFAB47BC</color>
+    <color name="widget_bar_track">#1F000000</color>
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  单日倒数部件的元信息。
+
+  updatePeriodMillis 设为 0：系统允许的最小值是 30 分钟，对「按天更新」毫无
+  意义，还会白白唤醒进程。跨天刷新改由 CountdownRefreshReceiver 拦截
+  ACTION_DATE_CHANGED / ACTION_TIMEZONE_CHANGED / ACTION_TIME_CHANGED 完成。
+
+  configure 指向配置页 Activity，它必须在 Manifest 里 exported="true"，
+  否则系统添加部件时会直接闪退。
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.example.l78z.widget.SingleDayConfigActivity"
+    android:initialLayout="@layout/single_day_widget"
+    android:minHeight="50dp"
+    android:minWidth="110dp"
+    android:previewImage="@mipmap/ic_launcher"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen" />

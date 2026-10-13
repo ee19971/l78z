@@ -1,0 +1,145 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 局域网传输的收发都靠 socket：开服务要 bind/listen，发数据要建连。
+         之前只有 debug/profile 的 manifest 声明了它，release 包是靠插件
+         合并进来的——插件一旦换掉就会出现"release 包全体断网"的隐性故障，
+         这里显式声明兜底。 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 开机后重新刷新桌面部件：部分 ROM 不会重放 APPWIDGET_UPDATE，
+         少了它，重启一次部件可能就一直空着。 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- 仅 Android 9 及以下需要：把收到的文件写进公共"下载"目录。
+         Android 10+ 走 MediaStore，不需要任何存储权限。 -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"/>
+    <application
+        android:label="@string/app_name"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+        <!-- 把拍照输出目录暴露成 content:// Uri 给系统相机写入。
+             相机应用拿到的是临时读写授权，拿不到应用的整个私有目录。 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+
+        <!-- ==================== 桌面小部件 ==================== -->
+
+        <!-- 单日倒数。info xml 里的 configure 指向下面那个配置页。 -->
+        <receiver
+            android:name=".widget.SingleDayWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/single_day_widget_info" />
+        </receiver>
+
+        <!-- 倒数日列表。行数据由下面的 CountdownListService 供给。 -->
+        <receiver
+            android:name=".widget.CountdownListWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/countdown_list_widget_info" />
+        </receiver>
+
+        <!-- 人生进度条。 -->
+        <receiver
+            android:name=".widget.LifeProgressWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/life_progress_widget_info" />
+        </receiver>
+
+        <!-- 单日部件的配置页。exported 必须是 true——拉起它的是桌面（另一个进程），
+             自己应用内调不起来；少了 APPWIDGET_CONFIGURE 过滤器则系统不会显示
+             「添加」流程里的配置步骤。 -->
+        <activity
+            android:name=".widget.SingleDayConfigActivity"
+            android:exported="true"
+            android:theme="@style/NormalTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- 列表部件的供数 Service。BIND_REMOTEVIEWS 是硬要求：没有它系统拒绝
+             绑定，部件列表会永远空着。 -->
+        <service
+            android:name=".widget.CountdownListService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <!-- 跨天 / 改时区 / 改系统时间 / 开机 → 刷新全部部件。
+             exported=true 是接收系统广播的必要条件（它带 intent-filter）；
+             这几个 action 都是系统保护广播，外部应用发不进来，敞开没有风险。 -->
+        <receiver
+            android:name=".widget.CountdownRefreshReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+    <!-- Required to query activities that can process text, see:
+         https://developer.android.com/training/package-visibility and
+         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+
+         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Android 11+ 包可见性：不声明的话 resolveActivity 查不到系统相机，
+             会被误判成「这台设备没有相机应用」。 -->
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE"/>
+        </intent>
+    </queries>
+</manifest>

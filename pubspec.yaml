@@ -1,0 +1,137 @@
+name: l78z
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+# 用户看到的版本号。build 号必须单调递增——它会被当作安卓的 versionCode，
+# 改小会导致覆盖安装时报 INSTALL_FAILED_VERSION_DOWNGRADE。
+version: 3.3.0+330
+
+environment:
+  sdk: ^3.13.5
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+  rust_lib_l78z:
+    path: rust_builder
+  flutter_rust_bridge: 2.13.0
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  lunar: ^1.7.0
+  # 节日节气页的显示偏好（表情开关、封面颜色、隐藏的节日）存这里。
+  # 这些是纯 UI 偏好，Rust 侧完全用不到，走 FRB 只是多一次 codegen
+  # 和一个 JSON 文件——提醒功能已经明确不做，不会有哪天需要 Rust 读它。
+  shared_preferences: ^2.3.0
+  # 主页面时钟显示任意城市时间用。DateTime 只能拿到本机时区，
+  # 要显示东京/伦敦/纽约且算对夏令时，必须自带 IANA 数据库。
+  # 包本身很小，加上 tz 数据文本约 450KB，对 150MB 的产物可忽略。
+  timezone: ^0.9.0
+  # 扫码不再用应用内实时相机（mobile_scanner / ML Kit），改为调起系统相机拍照后识别，
+  # 因此这个依赖已经没有引用了。
+  file_picker: ^13.1.0
+  path_provider: ^2.1.6
+  # 关于页的版本号来源：直接读 APK 的 versionName，不会和 pubspec.yaml 的
+  # version 写岔。体积很小（约 30KB）。
+  # 必须 >= 10：file_picker 13 拉的 plugin_platform_interface 版本更高，
+  # 用 8.x 会解析失败。
+  package_info_plus: ^10.2.2
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^6.0.0
+  integration_test:
+    sdk: flutter
+  msix: ^3.18.0
+  freezed: ^4.0.2
+  build_runner: ^2.16.2
+  json_serializable: ^6.14.1
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  generate: true
+
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/ocr/
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/to/resolution-aware-images
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/to/asset-from-package
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package
+
+msix_config:
+  display_name: 互传助手
+  publisher_display_name: 互传助手
+  # identity_name 不要改：改了系统会当成另一个应用，无法覆盖安装。
+  identity_name: com.l78z.desktop
+  # 必须与 pubspec.yaml 的 version（3.3.0+330）对齐，且四段式。
+  msix_version: 3.3.0.0
+  architectures:
+    - x64
+  certificate_path: certs/l78z-dev.pfx
+  certificate_password: l78z-dev-2026
+  # 模型等大文件已在 assets 中，直接进包

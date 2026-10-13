@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  应用显示名。放在资源文件而不是硬编码进 AndroidManifest，
+  是因为 manifest 里的字面量无法做本地化，而且资源表统一走 UTF-8，
+  避免编码上的歧义。
+  包名仍然是 com.example.l78z，这里只改用户看到的名字。
+-->
+<resources>
+    <string name="app_name">互传助手</string>
+
+    <!-- 桌面小部件文案 -->
+    <string name="widget_list_title">倒数日</string>
+    <string name="widget_life_title">人生进度</string>
+    <string name="widget_bar_day">今天</string>
+    <string name="widget_bar_week">本周</string>
+    <string name="widget_bar_month">本月</string>
+    <string name="widget_bar_year">本年</string>
+    <string name="widget_config_title">选择要显示的倒数日</string>
+    <string name="widget_config_hint">点选一条后部件会固定显示它，之后每天自动更新</string>
+    <string name="widget_config_empty">还没有倒数日，先去应用里添加一条吧</string>
+    <string name="widget_config_confirm">完成</string>
+</resources>

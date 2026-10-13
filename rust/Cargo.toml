@@ -1,0 +1,50 @@
+[package]
+name = "rust_lib_l78z"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+flutter_rust_bridge = "=2.13.0"
+
+qrcode = { version = "0.14", default-features = false, features = ["image"] }
+rxing = { version = "0.9", features = ["image"] }
+image = "0.25"
+rapidocr-core = "0.2"
+axum = { version = "0.8", features = ["multipart"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "stream", "rustls-tls"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rand = "0.9"
+local-ip-address = "0.6"
+anyhow = "1"
+chrono = "0.4"
+futures-util = "0.3"
+tokio-util = { version = "0.7", features = ["io", "rt"] }
+
+# LocalSend 协议兼容层。
+#
+# core 是从官方仓库 vendor 进来的独立副本（vendor/localsend-core，
+# Apache-2.0，其 LICENSE 已一并保留）。
+#
+# 开 discovery —— 它展开就是 http + multicast，零额外依赖，但多给一个
+# 现成的 discovery 模块（多播 announce/监听 + scan_subnet 主动扫描兜底），
+# 比自己拿 multicast 裸 socket 拼要省事。
+#
+# crypto 是 http 的子依赖，自动带上，证书生成（generate_self_signed）
+# 因此可用——LocalSend 强制 HTTPS，证书是硬需求。
+#
+# webrtc 先不碰，控制编译时间与产物体积。
+#
+# 它内部用的是 reqwest 0.13 / rand 0.10，与本 crate 的 0.12 / 0.9
+# 会共存两份。功能互不影响，代价是编译变慢。
+localsend = { path = "vendor/localsend-core", features = ["discovery"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

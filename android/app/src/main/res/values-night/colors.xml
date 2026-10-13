@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色模式下的小部件配色（Material 3 暗色种子色）。 -->
+    <color name="widget_bg">#FF1C1B1F</color>
+    <color name="widget_text_primary">#FFE6E0E9</color>
+    <color name="widget_text_secondary">#FFCAC4D0</color>
+    <color name="widget_accent">#FFD0BCFF</color>
+    <color name="widget_accent_soft">#33D0BCFF</color>
+
+    <!-- 深色下四色略提亮，避免在暗背景上发闷。 -->
+    <color name="widget_bar_day">#FF81C784</color>
+    <color name="widget_bar_week">#FF64B5F6</color>
+    <color name="widget_bar_month">#FFFFAB91</color>
+    <color name="widget_bar_year">#FFCE93D8</color>
+    <color name="widget_bar_track">#3DFFFFFF</color>
+</resources>

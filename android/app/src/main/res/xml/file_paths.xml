@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  系统相机只能往我们给的 Uri 写文件，而不能直接写应用私有路径。
+  FileProvider 把缓存目录里的拍照输出暴露成 content:// Uri 供相机写入。
+-->
+<paths>
+    <cache-path
+        name="l78z_camera"
+        path="l78z_camera/" />
+</paths>

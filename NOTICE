@@ -1,0 +1,39 @@
+互传助手 (l78z)
+Copyright 2026 com.example
+
+本产品使用了以下第三方开源组件，其各自的版权与许可声明见下：
+
+LocalSend core (packages/core)
+  Copyright the LocalSend authors
+  Licensed under the Apache License, Version 2.0
+  https://localsend.org
+
+Rust 生态
+  axum, tokio, serde, reqwest, anyhow, chrono, futures-util, tokio-util
+  Licensed under the Apache License, Version 2.0 / MIT（各 crate 自身声明为准）
+
+  rapidocr-core
+  Licensed under the Apache License, Version 2.0
+
+  qrcode, rxing, image, local-ip-address
+  Licensed under the MIT License
+
+Flutter / Dart 生态
+  flutter_rust_bridge, lunar, file_picker, freezed_annotation,
+  json_annotation, package_info_plus
+  Licensed under the MIT License
+
+  path_provider, intl
+  Licensed under the BSD-3-Clause License
+
+  cupertino_icons
+  Licensed under the MIT License
+
+---
+
+Apache License 2.0 条款说明（摘要，非法律文本）
+本产品的完整许可见 LICENSE 文件。
+
+  * 允许商业使用、修改、分发
+  * 分发时必须保留本文件与 LICENSE 文件中的版权与许可声明
+  * 不提供任何明示或暗示的担保

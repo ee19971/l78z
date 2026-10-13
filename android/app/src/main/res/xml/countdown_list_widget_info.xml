@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  倒数日列表部件的元信息。
+
+  ListView 部件必须走 Service + RemoteViewsFactory：RemoteViews 只是一串
+  跨进程指令，launcher 拿不到本应用的 List 对象，只能由它回调我们的
+  Service 逐行要 View。updatePeriodMillis 同样置 0，跨天靠广播刷新。
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/countdown_list_widget"
+    android:minHeight="140dp"
+    android:minWidth="180dp"
+    android:previewImage="@mipmap/ic_launcher"
+    android:resizeMode="vertical"
+    android:widgetCategory="home_screen" />
