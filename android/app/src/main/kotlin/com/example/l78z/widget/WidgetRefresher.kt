@@ -19,7 +19,7 @@ object WidgetRefresher {
     fun refreshAll(context: Context) {
         val mgr = AppWidgetManager.getInstance(context) ?: return
         SingleDayWidget.updateAll(context, mgr)
-        CountdownListWidget.updateAll(context, mgr)
+        ListWidget.updateAll(context, mgr)
         LifeProgressWidget.updateAll(context, mgr)
     }
 }

@@ -2,15 +2,16 @@
 <!--
   倒数日列表部件的元信息。
 
-  ListView 部件必须走 Service + RemoteViewsFactory：RemoteViews 只是一串
-  跨进程指令，launcher 拿不到本应用的 List 对象，只能由它回调我们的
-  Service 逐行要 View。updatePeriodMillis 同样置 0，跨天靠广播刷新。
+  minHeight/resizeMode 与 life_progress_widget_info 保持同款写法
+  （排查期对齐的，无害）。列表真正的历史坑不在这里，在 ListWidget
+  类注释里：ListView/RemoteViewsService、RemoteViews.addView、
+  以及 R8 对 const val 布局常量的错误优化（layoutId=0）。
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialLayout="@layout/countdown_list_widget"
-    android:minHeight="140dp"
+    android:minHeight="70dp"
     android:minWidth="180dp"
     android:previewImage="@mipmap/ic_launcher"
     android:previewLayout="@layout/countdown_list_widget"
-    android:resizeMode="vertical"
+    android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

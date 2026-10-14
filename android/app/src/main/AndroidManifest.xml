@@ -69,9 +69,12 @@
                 android:resource="@xml/single_day_widget_info" />
         </receiver>
 
-        <!-- 倒数日列表。行数据由下面的 CountdownListService 供给。 -->
+        <!-- 倒数日列表。整个列表是一个 TextView 的多行纯文本（只走 setText）。
+             组件名是 ListWidget 而非 CountdownListWidget：旧组件名在 3.6.0
+             时代被 HyperOS 记录过渲染失败，picker 添加路径上被按身份永久
+             拒绝（详见 ListWidget 类注释），改名是规避手段。 -->
         <receiver
-            android:name=".widget.CountdownListWidget"
+            android:name=".widget.ListWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -104,13 +107,6 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-
-        <!-- 列表部件的供数 Service。BIND_REMOTEVIEWS 是硬要求：没有它系统拒绝
-             绑定，部件列表会永远空着。 -->
-        <service
-            android:name=".widget.CountdownListService"
-            android:exported="false"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <!-- 跨天 / 改时区 / 改系统时间 / 开机 → 刷新全部部件。
              exported=true 是接收系统广播的必要条件（它带 intent-filter）；

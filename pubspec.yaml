@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # of the product and file versions while build-number is used as the build suffix.
 # 用户看到的版本号。build 号必须单调递增——它会被当作安卓的 versionCode，
 # 改小会导致覆盖安装时报 INSTALL_FAILED_VERSION_DOWNGRADE。
-version: 3.7.0+370
+version: 3.7.0+380
 
 environment:
   sdk: ^3.13.5
