@@ -1288,6 +1288,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get setLsCompatSub => '与官方 LocalSend 同一网络自动互通：不用扫码，进入传输页就会自动发现';
 
   @override
+  String get setSectionDesktopWidget => '桌面小部件';
+
+  @override
+  String get setDesktopWidgetCard => '显示倒数日卡片';
+
+  @override
+  String get setDesktopWidgetSub => '倒数日卡片贴在桌面上，随开机自动启动';
+
+  @override
+  String get setDesktopWidgetErr => '未找到桌面部件程序 l78z_widget.exe（需与主程序在同一目录）';
+
+  @override
   String get setSectionAbout => '关于';
 
   @override

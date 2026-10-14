@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # of the product and file versions while build-number is used as the build suffix.
 # 用户看到的版本号。build 号必须单调递增——它会被当作安卓的 versionCode，
 # 改小会导致覆盖安装时报 INSTALL_FAILED_VERSION_DOWNGRADE。
-version: 3.7.0+380
+version: 3.8.0+381
 
 environment:
   sdk: ^3.13.5
@@ -139,8 +139,8 @@ msix_config:
   publisher_display_name: 互传助手
   # identity_name 不要改：改了系统会当成另一个应用，无法覆盖安装。
   identity_name: com.l78z.desktop
-  # 必须与 pubspec.yaml 的 version（3.4.0+340）对齐，且四段式。
-  msix_version: 3.7.0.0
+  # 必须与 pubspec.yaml 的 version（3.8.0+381）对齐，且四段式。
+  msix_version: 3.8.0.0
   architectures:
     - x64
   certificate_path: certs/l78z-dev.pfx

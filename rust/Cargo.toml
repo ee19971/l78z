@@ -43,6 +43,41 @@ tokio-util = { version = "0.7", features = ["io", "rt"] }
 # 会共存两份。功能互不影响，代价是编译变慢。
 localsend = { path = "vendor/localsend-core", features = ["discovery"] }
 
+[features]
+# 桌面部件可执行文件 l78z_widget.exe 的编译开关。
+# 部件依赖 tao/wry 等窗口库，只有 Windows 用得上；cargokit 的
+# 全平台构建（Android/macOS/iOS）不带该 feature，bin 直接被跳过，
+# 不影响原有构建链。手动构建：
+#   cargo build --release --features widget --bin l78z_widget
+widget = []
+
+[[bin]]
+name = "l78z_widget"
+path = "src/bin/l78z_widget.rs"
+required-features = ["widget"]
+
+# 桌面部件（Windows 专用）：tao 窗口 + wry(WebView2) 渲染，
+# windows-sys 贴桌面层（Explorer 的 WorkerW）。
+# cfg(windows) 门控：Android 等目标不编译这些依赖。
+[target.'cfg(windows)'.dependencies]
+tao = "0.37"
+wry = "0.57"
+dirs = "5"
+# 从 tao 窗口取 HWND（版本须与 tao/wry 用的 rwh 一致）。
+raw-window-handle = "0.6"
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_Shell",
+    "Win32_Globalization",
+    "Win32_System_Threading",
+    # CreateMutexW 的 cfg 门是 Win32_Security（签名里带 SECURITY_ATTRIBUTES）。
+    "Win32_Security",
+    # GetStdHandle：GUI 方式启动时探测 stderr，没有就不能 eprintln!（会 panic）。
+    "Win32_System_Console",
+] }
+
 [dev-dependencies]
 tempfile = "3"
 

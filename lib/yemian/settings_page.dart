@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,6 +9,7 @@ import '../src/rust/api/config.dart';
 import 'about_page.dart';
 import 'app_settings.dart';
 import 'city_picker.dart';
+import 'desktop_widget.dart';
 import 'frb_util.dart';
 import 'timezone_data.dart';
 
@@ -31,6 +34,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   bool _verifyChecksums = true;
   bool _lsCompatEnabled = false;
+
+  // 桌面小部件（仅 Windows）：即时生效的开关，不随下方保存按钮走。
+  bool _desktopWidget = false;
+  bool _widgetBusy = false;
 
   // 显示与地区：直接读单例内存值（main() 里已 load），改动也走单例，
   // MaterialApp 靠 notifyListeners 即时重建，这里只是同步显示状态。
@@ -63,6 +70,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _fontFamily = AppSettingsModel.instance.fontFamily;
       _themeColorId = AppSettingsModel.instance.themeColorId;
       _cityName = loc == null ? null : cityByLocation(loc).name;
+      _desktopWidget = sp.getBool(kDesktopWidgetEnabled) ?? false;
     });
   }
 
@@ -89,6 +97,40 @@ class _SettingsPageState extends State<SettingsPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _loadError = e.toString());
+    }
+  }
+
+  /// 切换桌面小部件：先动进程/注册表，全部成功后才写 prefs。
+  ///
+  /// 打开时 exe 缺失（开发环境没拷贝）→ 提示并保持开关关；
+  /// 关闭时先杀进程再删 Run 键，让桌面立刻消失。
+  Future<void> _toggleDesktopWidget(bool v) async {
+    final l10n = AppLocalizations.of(context)!;
+    if (v && widgetExePath() == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.setDesktopWidgetErr)));
+      return;
+    }
+    setState(() => _widgetBusy = true);
+    try {
+      if (v) {
+        await setDesktopWidgetAutostart(true);
+        await startDesktopWidget();
+      } else {
+        await stopDesktopWidget();
+        await setDesktopWidgetAutostart(false);
+      }
+      await setDesktopWidgetEnabled(v);
+      if (!mounted) return;
+      setState(() {
+        _desktopWidget = v;
+        _widgetBusy = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _widgetBusy = false);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$e')));
     }
   }
 
@@ -493,6 +535,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ),
           ),
+          if (Platform.isWindows) ...[
+            const SizedBox(height: 24),
+            Text(l10n.setSectionDesktopWidget,
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Card(
+              child: SwitchListTile(
+                title: Text(l10n.setDesktopWidgetCard),
+                subtitle: Text(l10n.setDesktopWidgetSub),
+                value: _desktopWidget,
+                onChanged: _widgetBusy ? null : _toggleDesktopWidget,
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           Text(l10n.setSectionAbout,
               style: Theme.of(context).textTheme.titleMedium),

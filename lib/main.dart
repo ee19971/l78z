@@ -13,6 +13,7 @@ import 'yemian/timezone_data.dart';
 import 'yemian/tools_page.dart';
 
 import 'l10n/app_localizations.dart';
+import 'yemian/desktop_widget.dart';
 
 
 Future<void> main() async {
@@ -45,6 +46,11 @@ Future<void> _initAppSettings() async {
   final sp = await SharedPreferences.getInstance();
   if (sp.getString(kCityLocation) == null) {
     await sp.setString(kCityLocation, detectLocalCity().location);
+  }
+  // Windows 桌面部件自愈：开关开着但进程不在（被手动结束/异常退出）→
+  // 拉起。开发环境 exe 不在时 startDesktopWidget 内部静默跳过。
+  if (await desktopWidgetEnabled() && !(await isWidgetRunning())) {
+    await startDesktopWidget();
   }
 }
 

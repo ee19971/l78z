@@ -2318,6 +2318,30 @@ abstract class AppLocalizations {
   /// **'与官方 LocalSend 同一网络自动互通：不用扫码，进入传输页就会自动发现'**
   String get setLsCompatSub;
 
+  /// No description provided for @setSectionDesktopWidget.
+  ///
+  /// In zh, this message translates to:
+  /// **'桌面小部件'**
+  String get setSectionDesktopWidget;
+
+  /// No description provided for @setDesktopWidgetCard.
+  ///
+  /// In zh, this message translates to:
+  /// **'显示倒数日卡片'**
+  String get setDesktopWidgetCard;
+
+  /// No description provided for @setDesktopWidgetSub.
+  ///
+  /// In zh, this message translates to:
+  /// **'倒数日卡片贴在桌面上，随开机自动启动'**
+  String get setDesktopWidgetSub;
+
+  /// No description provided for @setDesktopWidgetErr.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到桌面部件程序 l78z_widget.exe（需与主程序在同一目录）'**
+  String get setDesktopWidgetErr;
+
   /// No description provided for @setSectionAbout.
   ///
   /// In zh, this message translates to:

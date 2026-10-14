@@ -1302,6 +1302,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Auto-discover official LocalSend on the same network: no QR code needed';
 
   @override
+  String get setSectionDesktopWidget => 'Desktop widget';
+
+  @override
+  String get setDesktopWidgetCard => 'Show countdown card';
+
+  @override
+  String get setDesktopWidgetSub =>
+      'Pin countdown cards to the desktop; starts with Windows';
+
+  @override
+  String get setDesktopWidgetErr =>
+      'Widget program l78z_widget.exe not found (it must be next to the app)';
+
+  @override
   String get setSectionAbout => 'About';
 
   @override

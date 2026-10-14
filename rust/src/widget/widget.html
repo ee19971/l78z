@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<!-- Windows 桌面「倒数日列表」部件的卡片界面。
+
+     整个窗口就是这张卡片：背景透明（窗口四角透出壁纸），卡片本体
+     画圆角。数据由 Rust 注入 window.__INIT__ 并以 window.render(JSON)
+     增量刷新——文案（标题/状态词/右键菜单）全部在 Rust 侧拼好，
+     页面只负责摆放。
+
+     交互三件套：按住拖动（超过 4px 交给系统移动循环）、单击拉起
+     主程序、右键弹自定义菜单（退出/打开）。 -->
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>倒数日</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: transparent;
+    overflow: hidden;
+  }
+  body {
+    font-family: "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI",
+                 "PingFang SC", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+  }
+
+  #card {
+    width: 100%; height: 100%;
+    padding: 14px 16px;
+    background: rgba(252, 252, 253, 0.96);
+    border-radius: 18px;
+    color: #1c1b1f;
+    overflow: hidden;
+  }
+  #title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 26px;
+    letter-spacing: 0.02em;
+    color: #56565c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* 行高 24px 必须与 Rust 侧 ROW_H 一致，窗口高度按它计算。 */
+  .row {
+    font-size: 13px;
+    line-height: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+  .empty {
+    font-size: 13px;
+    line-height: 24px;
+    color: #98989e;
+  }
+
+  /* 右键菜单 */
+  #menu {
+    position: fixed;
+    z-index: 10;
+    display: none;
+    min-width: 136px;
+    padding: 4px;
+    background: #fbfbfc;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    font-size: 13px;
+    color: #1c1b1f;
+  }
+  #menu .mi { padding: 7px 12px; border-radius: 6px; }
+  #menu .mi:hover { background: rgba(0, 0, 0, 0.06); }
+
+  @media (prefers-color-scheme: dark) {
+    #card {
+      background: rgba(30, 30, 34, 0.96);
+      color: #e4e4e8;
+    }
+    #title { color: #a8a8b0; }
+    .empty { color: #7a7a82; }
+    #menu {
+      background: #2a2a30;
+      border-color: rgba(255, 255, 255, 0.10);
+      color: #e4e4e8;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    #menu .mi:hover { background: rgba(255, 255, 255, 0.08); }
+  }
+</style>
+</head>
+<body>
+  <div id="card">
+    <div id="title">倒数日</div>
+    <div id="rows"></div>
+  </div>
+
+  <div id="menu">
+    <div class="mi" id="mi-open">打开互传助手</div>
+    <div class="mi" id="mi-quit">退出部件</div>
+  </div>
+
+<script>
+"use strict";
+
+// 向宿主（Rust）发消息；页面里所有主动行为都走这里。
+function post(msg) {
+  window.chrome.webview.postMessage(msg);
+}
+
+// JS 报错回传宿主（release 版没有控制台，日志文件是唯一出口）。
+window.onerror = function (msg, src, line, col) {
+  post("err " + msg + " @" + line + ":" + col);
+  return false;
+};
+
+// Rust 增量刷新的入口。
+window.render = function (p) {
+  document.getElementById("title").textContent = p.title;
+  document.getElementById("mi-open").textContent = p.menu_open;
+  document.getElementById("mi-quit").textContent = p.menu_quit;
+
+  const box = document.getElementById("rows");
+  box.textContent = "";
+  if (!p.rows.length) {
+    const d = document.createElement("div");
+    d.className = "empty";
+    d.textContent = p.empty;
+    box.appendChild(d);
+  } else {
+    for (const t of p.rows) {
+      const d = document.createElement("div");
+      d.className = "row";
+      d.textContent = t;
+      box.appendChild(d);
+    }
+  }
+};
+
+// 初始数据由 Rust 注入：替换掉「占位注释 + 默认值 null」整段。
+// 注入失败时这里就是 null，render(null) 抛错并回传宿主日志，便于定位。
+window.__INIT__ = /*__INIT_JSON__*/null;
+try {
+  window.render(window.__INIT__);
+  post("ready rows=" + (window.__INIT__.rows || []).length
+       + " empty='" + (window.__INIT__.empty || "") + "'");
+} catch (e) {
+  post("err render: " + e);
+}
+
+// —— 拖动 / 点击 ——
+// 按下后移动超过 4px 视为拖动：post("drag") 让系统接管移动循环，
+// 期间网页收不到鼠标事件；原地松手则是点击，拉起主程序。
+let down = null;
+let dragged = false;
+
+document.addEventListener("mousedown", function (e) {
+  hideMenu();
+  if (e.button !== 0) return;
+  down = { x: e.clientX, y: e.clientY };
+  dragged = false;
+});
+
+document.addEventListener("mousemove", function (e) {
+  if (!down || dragged) return;
+  if (Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y) > 4) {
+    dragged = true;
+    post("drag");
+  }
+});
+
+document.addEventListener("mouseup", function (e) {
+  if (e.button === 0 && down && !dragged) post("open");
+  down = null;
+});
+
+// —— 右键菜单 ——
+const menu = document.getElementById("menu");
+
+function hideMenu() {
+  menu.style.display = "none";
+}
+
+document.addEventListener("contextmenu", function (e) {
+  e.preventDefault(); // 拦掉 WebView2 自带菜单
+  menu.style.display = "block";
+  const left = Math.min(e.clientX, window.innerWidth - menu.offsetWidth - 4);
+  const top = Math.min(e.clientY, window.innerHeight - menu.offsetHeight - 4);
+  menu.style.left = Math.max(4, left) + "px";
+  menu.style.top = Math.max(4, top) + "px";
+});
+
+document.getElementById("mi-open").addEventListener("click", function () {
+  hideMenu();
+  post("open");
+});
+document.getElementById("mi-quit").addEventListener("click", function () {
+  hideMenu();
+  post("quit");
+});
+window.addEventListener("blur", hideMenu);
+</script>
+</body>
+</html>
