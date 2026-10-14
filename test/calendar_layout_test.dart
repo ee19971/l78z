@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:l78z/l10n/app_localizations.dart';
 import 'package:l78z/yemian/calendar.dart';
 
 Future<void> pumpAt(WidgetTester tester, Size size) async {
   await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
-    const MaterialApp(home: Scaffold(body: CalendarPage())),
+    MaterialApp(
+      // 文案已走 l10n，测试锁中文环境。
+      locale: const Locale('zh', 'CN'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const Scaffold(body: CalendarPage()),
+    ),
   );
   await tester.pump();
 }

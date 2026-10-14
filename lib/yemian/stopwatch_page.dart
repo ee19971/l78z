@@ -9,6 +9,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 /// 秒表模型。
 ///
 /// 做成**单例**是这个页面的关键设计：页面 dispose 时只取消刷新用的 Timer，
@@ -154,10 +156,11 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
   /// 按钮随状态三态切换：未开始 / 运行中 / 暂停。
   Widget _controls() {
+    final l10n = AppLocalizations.of(context)!;
     if (!_model.started) {
       return Row(
         children: [
-          _primary('开始', () {
+          _primary(l10n.swStart, () {
             _model.start();
             _syncTicker();
           }),
@@ -167,12 +170,12 @@ class _StopwatchPageState extends State<StopwatchPage> {
     if (_model.running) {
       return Row(
         children: [
-          _secondary('计次', () {
+          _secondary(l10n.swLap, () {
             _model.lap();
             setState(() {});
           }),
           const SizedBox(width: 12),
-          _primary('暂停', () {
+          _primary(l10n.swPause, () {
             _model.pause();
             _syncTicker();
           }),
@@ -181,12 +184,12 @@ class _StopwatchPageState extends State<StopwatchPage> {
     }
     return Row(
       children: [
-        _secondary('复位', () {
+        _secondary(l10n.swReset, () {
           _model.reset();
           setState(() {});
         }),
         const SizedBox(width: 12),
-        _primary('继续', () {
+        _primary(l10n.swResume, () {
           _model.start();
           _syncTicker();
         }),
@@ -200,11 +203,12 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
   Widget _lapsList() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     if (_model.laps.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Center(
-          child: Text('计时中点「记一圈」开始计次',
+          child: Text(l10n.swHint,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         ),
@@ -227,7 +231,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
             children: [
               SizedBox(
                 width: 56,
-                child: Text('第 ${i + 1} 圈',
+                child: Text(l10n.swLapN(i + 1),
                     style: theme.textTheme.bodyMedium),
               ),
               Expanded(
@@ -263,7 +267,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
             children: [
               SizedBox(
                 width: 56,
-                child: Text('总计',
+                child: Text(l10n.swTotal,
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w600)),
               ),
@@ -290,7 +294,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('秒表')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.swTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -5,6 +5,8 @@
 
 //Copyright (c) 2026 by ee19971 3180749809@qq.com, All Rights Reserved.
 
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:timezone/data/latest_10y.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -212,4 +214,128 @@ String formatUtcOffset(Duration offset) {
   final h = abs.inHours;
   final m = abs.inMinutes % 60;
   return m == 0 ? 'UTC$sign$h' : 'UTC$sign$h:${m.toString().padLeft(2, '0')}';
+}
+
+/// ISO 3166-1 alpha-2 国家码 → 首都时区标识，覆盖 [kContinentCities] 全部 73 国。
+///
+/// 用途：装机首装时没有用户选过城市，用系统 locale 的国家码（如 `en-US`
+/// 里的 `US`）直接定位到该国首都，比按 UTC 偏移猜准得多——偏移相同的
+/// 国家一大把（整个欧洲夏令时都是 +2），国家码一对一才不会选错。
+const Map<String, String> kCountryCodeToLocation = {
+  // 亚洲
+  'CN': 'Asia/Shanghai',
+  'JP': 'Asia/Tokyo',
+  'KR': 'Asia/Seoul',
+  'KP': 'Asia/Pyongyang',
+  'MN': 'Asia/Ulaanbaatar',
+  'IN': 'Asia/Kolkata',
+  'PK': 'Asia/Karachi',
+  'BD': 'Asia/Dhaka',
+  'TH': 'Asia/Bangkok',
+  'VN': 'Asia/Ho_Chi_Minh',
+  'ID': 'Asia/Jakarta',
+  'PH': 'Asia/Manila',
+  'MY': 'Asia/Kuala_Lumpur',
+  'SG': 'Asia/Singapore',
+  'IR': 'Asia/Tehran',
+  'SA': 'Asia/Riyadh',
+  'AE': 'Asia/Dubai',
+  'TR': 'Europe/Istanbul',
+  'IL': 'Asia/Jerusalem',
+  // 欧洲
+  'GB': 'Europe/London',
+  'FR': 'Europe/Paris',
+  'DE': 'Europe/Berlin',
+  'IT': 'Europe/Rome',
+  'ES': 'Europe/Madrid',
+  'PT': 'Europe/Lisbon',
+  'NL': 'Europe/Amsterdam',
+  'BE': 'Europe/Brussels',
+  'AT': 'Europe/Vienna',
+  'CH': 'Europe/Zurich',
+  'CZ': 'Europe/Prague',
+  'PL': 'Europe/Warsaw',
+  'HU': 'Europe/Budapest',
+  'RO': 'Europe/Bucharest',
+  'GR': 'Europe/Athens',
+  'UA': 'Europe/Kyiv',
+  'RU': 'Europe/Moscow',
+  'SE': 'Europe/Stockholm',
+  'NO': 'Europe/Oslo',
+  'FI': 'Europe/Helsinki',
+  'DK': 'Europe/Copenhagen',
+  'IE': 'Europe/Dublin',
+  // 非洲
+  'EG': 'Africa/Cairo',
+  'ZA': 'Africa/Johannesburg',
+  'NG': 'Africa/Lagos',
+  'KE': 'Africa/Nairobi',
+  'ET': 'Africa/Addis_Ababa',
+  'GH': 'Africa/Accra',
+  'SN': 'Africa/Dakar',
+  'CD': 'Africa/Kinshasa',
+  'AO': 'Africa/Luanda',
+  'ZW': 'Africa/Harare',
+  'TZ': 'Africa/Dar_es_Salaam',
+  'MA': 'Africa/Casablanca',
+  // 美洲
+  'US': 'America/New_York',
+  'CA': 'America/Toronto',
+  'MX': 'America/Mexico_City',
+  'CU': 'America/Havana',
+  'GT': 'America/Guatemala',
+  'PA': 'America/Panama',
+  'CO': 'America/Bogota',
+  'VE': 'America/Caracas',
+  'PE': 'America/Lima',
+  'CL': 'America/Santiago',
+  'AR': 'America/Argentina/Buenos_Aires',
+  'BR': 'America/Sao_Paulo',
+  'UY': 'America/Montevideo',
+  'BO': 'America/La_Paz',
+  'EC': 'America/Guayaquil',
+  'PY': 'America/Asuncion',
+  'JM': 'America/Jamaica',
+  // 大洋洲
+  'AU': 'Australia/Sydney',
+  'NZ': 'Pacific/Auckland',
+  'FJ': 'Pacific/Fiji',
+};
+
+/// 探测本机最可能的首都，装机首装时写进城市 prefs。
+///
+/// 两级策略：
+/// 1. 系统 locale 的国家码查 [kCountryCodeToLocation]——一对一，最准；
+/// 2. 兜底按**当前实际 UTC 偏移**（含夏令时）在首都表里找第一个命中的，
+///    比写死北京强；同偏移的国家很多，顺序即优先级（表里首都优先）。
+///
+/// 不引平台插件拿 IANA 时区名：Windows 上没有实现（见 [kDefaultCity] 注释），
+/// 而 locale 国家码 + 偏移两级已经能覆盖绝大多数场景。
+CityInfo detectLocalCity() {
+  // 1. locale 国家码
+  try {
+    final cc = PlatformDispatcher.instance.locale.countryCode?.toUpperCase();
+    if (cc != null) {
+      final location = kCountryCodeToLocation[cc];
+      if (location != null) return cityByLocation(location);
+    }
+  } catch (_) {
+    // 拿不到 locale 就继续走偏移兜底
+  }
+
+  // 2. UTC 偏移匹配（时区库没就绪就没法算各首都偏移，直接回默认）
+  if (timezonesReady) {
+    try {
+      final local = DateTime.now().timeZoneOffset;
+      for (final c in kCities) {
+        final off =
+            tz.TZDateTime.now(tz.getLocation(c.location)).timeZoneOffset;
+        if (off == local) return c;
+      }
+    } catch (_) {
+      // 某个首都算不了就跳过，往下回默认
+    }
+  }
+
+  return kDefaultCity;
 }

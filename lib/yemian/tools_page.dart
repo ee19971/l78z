@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import 'lan_transfer_page.dart';
 import 'qr_gen_page.dart';
 import 'scan_page.dart';
@@ -11,24 +12,35 @@ class ToolsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final items = [
-      (Icons.qr_code_scanner, '扫一扫', '扫码 / 选图解码 / 图片 OCR', const ScanPage()),
+      (
+        Icons.qr_code_scanner,
+        l10n.toolsScan,
+        l10n.toolsScanSub,
+        const ScanPage(),
+      ),
       (
         Icons.qr_code_2,
-        '二维码 / 条形码',
-        '14 种格式，支持 WiFi、名片等模板',
+        l10n.toolsQr,
+        l10n.toolsQrSub,
         const QrGenPage(),
       ),
       (
         Icons.swap_horiz,
-        '局域网传输',
-        '手机与电脑互传文本与文件',
+        l10n.toolsLan,
+        l10n.toolsLanSub,
         const LanTransferPage(),
       ),
-      (Icons.settings_outlined, '设置', '互传配置、版本与开源许可', const SettingsPage()),
+      (
+        Icons.settings_outlined,
+        l10n.toolsSettings,
+        l10n.toolsSettingsSub,
+        const SettingsPage(),
+      ),
     ];
     return Scaffold(
-      appBar: AppBar(title: const Text('工具')),
+      appBar: AppBar(title: Text(l10n.toolsTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

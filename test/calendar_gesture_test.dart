@@ -16,13 +16,20 @@
 // 然后从 Listener 的事件派发根因查起。
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:l78z/l10n/app_localizations.dart';
 import 'package:l78z/yemian/calendar.dart';
 
 /// 手势：单指左右滑换年、上下滑换月；双指捏合换粗视图、外扩换细视图
 void main() {
   Future<void> pumpCalendar(WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: CalendarPage())),
+      MaterialApp(
+        // 文案已走 l10n，测试锁中文环境——断言里的「年视图」等都来自 zh 版。
+        locale: const Locale('zh', 'CN'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: CalendarPage()),
+      ),
     );
     await tester.pumpAndSettle();
   }

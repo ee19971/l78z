@@ -1,15 +1,835 @@
 {
-  "title": "你好",
-  "helloWorld": "你好世界!",
-  "@helloWorld": {
-    "description": "传统的新生儿程序员问候"
-  },
-  "rustDemo": "操作: 调用 Rust `greet(\"Tom\")`\n结果: {greetResult}\n\n1 + 2 = {addResult}",
-  "@rustDemo": {
-    "description": "Rust 调用演示",
+  "tabFestivals": "节日节气",
+  "tabCalculator": "日期计算",
+  "tabHome": "主页面",
+  "tabTools": "工具",
+  "tabCountdown": "倒数日",
+  "tabCalendar": "日历",
+
+  "appInitFailed": "初始化失败: {error}\n请检查浏览器控制台或查看是否缺少 COOP/COEP 请求头",
+  "@appInitFailed": {
     "placeholders": {
-      "greetResult": { "type": "String" },
-      "addResult": { "type": "String" }
+      "error": { "type": "String" }
+    }
+  },
+
+  "pickerSearchHint": "搜索国家或首都，如 日本、巴黎、asia",
+  "pickerNoMatch": "没有匹配「{query}」的国家或首都",
+  "@pickerNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+
+  "setRegionTitle": "语言与地区",
+  "setDisplayTitle": "显示",
+  "setLanguage": "语言",
+  "setFollowSystem": "跟随系统",
+  "setLanguageZh": "简体中文",
+  "setLanguageEn": "English",
+  "setTimeZoneCity": "时区城市",
+  "setAutoDetect": "自动检测",
+  "setFont": "字体",
+  "setFontSystem": "系统默认",
+  "setFontSans": "思源黑体",
+  "setFontSerif": "思源宋体",
+  "setFontSize": "字号  {percent}%",
+  "@setFontSize": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "setFontPreview": "永 Aa 互传助手 2026 — the quick brown fox",
+
+  "mainTitle": "主页面",
+  "mainOcr": "OCR 识别",
+  "mainQrScan": "二维码扫描",
+  "mainStopwatch": "秒表",
+  "mainOnThisDay": "历史上的今天",
+  "mainTzNotReady": "时区库未就绪",
+  "mainToday": "就在今天",
+  "mainTomorrow": "明天",
+  "mainInDays": "还有 {days} 天",
+  "@mainInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "mainTodayTitle": "今天",
+  "mainSolar": "公历",
+  "mainLunar": "农历",
+  "mainGanZhi": "干支",
+  "mainZodiac": "生肖",
+  "mainJieQi": "节气",
+  "mainNextFestival": "下一个：{name}",
+  "@mainNextFestival": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "toolsTitle": "工具",
+  "toolsScan": "扫一扫",
+  "toolsScanSub": "扫码 / 选图解码 / 图片 OCR",
+  "toolsQr": "二维码 / 条形码",
+  "toolsQrSub": "14 种格式，支持 WiFi、名片等模板",
+  "toolsLan": "局域网传输",
+  "toolsLanSub": "手机与电脑互传文本与文件",
+  "toolsSettings": "设置",
+  "toolsSettingsSub": "互传配置、版本与开源许可",
+
+  "otdLoadFailed": "数据加载失败：{error}",
+  "@otdLoadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "otdEvents": "大事记",
+  "otdBirths": "今天出生",
+  "otdDeaths": "今天逝世",
+  "otdCount": "{n} 条",
+  "@otdCount": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "otdSummary": "大事 {events} · 诞生 {births} · 逝世 {deaths}",
+  "@otdSummary": {
+    "placeholders": {
+      "events": { "type": "int" },
+      "births": { "type": "int" },
+      "deaths": { "type": "int" }
+    }
+  },
+  "otdEmpty": "这一天暂无收录的条目",
+  "otdNoData": "本日暂无数据",
+
+  "swTitle": "秒表",
+  "swStart": "开始",
+  "swPause": "暂停",
+  "swResume": "继续",
+  "swReset": "复位",
+  "swLap": "计次",
+  "swHint": "计时中点「计次」开始计圈",
+  "swLapN": "第 {n} 圈",
+  "@swLapN": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "swTotal": "总计",
+
+  "calcTitle": "日期计算",
+  "calcTabProject": "日期推算",
+  "calcTabDiff": "日期间隔",
+  "calcTabTime": "时间推算",
+  "calcDaysLabel": "相差的日子",
+  "calcUnitDays": "天",
+  "calcHintNegative": "可为负数",
+  "calcResult": "推算结果",
+  "calcNDays": "{n} 天",
+  "@calcNDays": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "calcLater": "终点比起点晚 {n} 天",
+  "@calcLater": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "calcEarlier": "终点比起点早 {n} 天",
+  "@calcEarlier": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "calcHoursLabel": "相差的小时",
+  "calcUnitHours": "时",
+  "calcMinutesLabel": "相差的分钟",
+  "calcUnitMinutes": "分",
+  "calcLunar": "农历",
+
+  "commonCancel": "取消",
+  "commonDelete": "删除",
+  "commonSave": "保存",
+  "commonEdit": "编辑",
+  "commonRetry": "重试",
+  "commonRefresh": "刷新",
+  "commonClose": "关闭",
+
+  "cdTitle": "倒数日",
+  "cdAdd": "添加倒数日",
+  "cdEditTitle": "编辑倒数日",
+  "cdOpFailed": "操作失败：{error}",
+  "@cdOpFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cdSaveFailed": "保存失败：{error}",
+  "@cdSaveFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cdLoadFailed": "读取失败:{error}",
+  "@cdLoadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cdDeleteTitle": "删除「{title}」",
+  "@cdDeleteTitle": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "cdDeleteMsg": "删除后无法恢复。",
+  "commonDayUnit": "天",
+  "cdRemain": "还剩",
+  "cdPassed": "已过",
+  "cdHas": "还有",
+  "cdUntilNext": "距下次",
+  "cdToday": "就是今天",
+  "cdModeCountdown": "倒数",
+  "cdModeCountup": "正数",
+  "cdModeYearly": "每年",
+  "cdModeCountdownFull": "倒数：距离目标日还剩几天",
+  "cdModeCountupFull": "正数：目标日已经过去几天",
+  "cdModeYearlyFull": "每年重复：生日、纪念日",
+  "cdTotal": "共 {n} 个倒数日",
+  "@cdTotal": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "cdEmpty": "还没有倒数日",
+  "cdEmptyHint": "把重要的日子记下来，桌面部件会替你盯着",
+  "cdPin": "置顶",
+  "cdUnpin": "取消置顶",
+  "cdPinHint": "置顶的会排在最前，桌面部件也优先显示",
+  "cdPinSwitchHint": "排在列表最前，桌面部件也优先显示",
+  "cdFieldTitle": "标题",
+  "cdFieldTitleHint": "例如：考研初试、结婚纪念日",
+  "cdFieldTarget": "目标日期",
+  "cdFieldMode": "计数方式",
+  "cdFieldColor": "主题色",
+  "cdFieldNote": "备注（可选）",
+  "cdErrTitleRequired": "请填写标题",
+  "cdQuote": "「{text}」",
+  "@cdQuote": {
+    "placeholders": {
+      "text": { "type": "String" }
+    }
+  },
+  "cdLifeTitle": "人生进度",
+  "cdLifeSubtitle": "设置出生日期后，这里和桌面部件都会显示进度",
+  "cdLifeEdit": "修改",
+  "cdLifePassed": "已过 {pct}%",
+  "@cdLifePassed": {
+    "placeholders": {
+      "pct": { "type": "String" }
+    }
+  },
+  "cdLifeLived": "已活 {days} 天",
+  "@cdLifeLived": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "cdLifeRemaining": "距 {age} 岁预期寿命还有 {days} 天",
+  "@cdLifeRemaining": {
+    "placeholders": {
+      "age": { "type": "int" },
+      "days": { "type": "int" }
+    }
+  },
+  "cdLifeSetupTitle": "人生进度设置",
+  "cdBirthday": "出生日期",
+  "cdNotSet": "未设置",
+  "cdLifespanField": "预期寿命（岁）",
+  "cdLifespanHelp": "用于折算总天数，随时可以改",
+  "cdQuoteField": "人生格言（可选）",
+  "cdQuoteHelp": "显示在进度卡片和桌面部件顶部",
+  "cdDefaultQuote": "今天不走，明天要跑。",
+  "cdErrPickBirthday": "请选择出生日期",
+  "cdErrLifespan": "预期寿命需为正整数",
+  "cdClearLife": "清除人生进度",
+
+  "commonToday": "今天",
+
+  "festTitle": "节日节气",
+  "festRemain": "还有",
+  "festNoMatch": "没有叫「{query}」的节日或节气",
+  "@festNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "festEmpty": "未来一年没有可显示的节日节气",
+  "festHiddenNotice": "有 {n} 个被隐藏了，可到设置里恢复",
+  "@festHiddenNotice": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "festSearch": "搜索",
+  "festCloseSearch": "关闭搜索",
+  "festSearchHint": "搜索节日或节气",
+  "festBadgeJieQi": "节气",
+  "festBadgeFestival": "节日",
+  "festColorfulBg": "显示彩色背景",
+  "festColorfulBgSub": "关闭后卡片改为素色",
+  "festShowEmoji": "显示表情",
+  "festShowEmojiSub": "在节日名称后追加一个 emoji",
+  "festCoverColor": "封面颜色",
+  "festCoverRotate": "轮换",
+  "festCoverRandom": "随机",
+  "festCoverRotateSub": "按列表顺序在八种颜色里循环",
+  "festCoverRandomSub": "每天打乱一次，同一天内保持不变",
+  "festHiddenTitle": "隐藏的节日",
+  "festHiddenNone": "当前没有隐藏任何节日",
+  "festHiddenCount": "已隐藏 {n} 项",
+  "@festHiddenCount": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "festGroupVisible": "可显示（{n}）",
+  "@festGroupVisible": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "festGroupHidden": "已隐藏（{n}）",
+  "@festGroupHidden": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+
+  "calViewYear": "年视图",
+  "calViewMonth": "月视图",
+  "calViewWeek": "周视图",
+  "calViewDay": "日视图",
+  "calWeekHeader": "日一二三四五六",
+  "calYearTitle": "{year}年",
+  "@calYearTitle": {
+    "placeholders": {
+      "year": { "type": "int" }
+    }
+  },
+  "calPrev": "上一{tag}",
+  "@calPrev": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "calNext": "下一{tag}",
+  "@calNext": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "calUnitYear": "年",
+  "calUnitMonth": "月",
+  "calUnitWeek": "周",
+  "calUnitDay": "日",
+  "calMonthTitle": "{month}月",
+  "@calMonthTitle": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "calDaysCount": "{days}天",
+  "@calDaysCount": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "calFestival": "节日",
+  "calDistance": "距今",
+  "calPassedDays": "已过 {days} 天",
+  "@calPassedDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "scanTitlePair": "扫码配对",
+  "scanTitleOcr": "OCR 识别",
+  "scanTitleScan": "扫一扫",
+  "scanTakePhoto": "拍照",
+  "scanPickGallery": "相册选图",
+  "scanPickImage": "选图",
+  "scanActionOcr": "识别文字 OCR",
+  "scanActionBarcode": "扫二维码/条形码",
+  "scanStageRead": "读取图片",
+  "scanStagePrepareModel": "准备 OCR 模型（首次约 140MB）",
+  "scanStageRecognizing": "正在识别文字",
+  "scanStageDone": "识别完成",
+  "scanStageDecoding": "正在解码二维码/条形码",
+  "scanStageDecoded": "解码完成",
+  "scanFailed": "识别失败 · {stage}：{error}",
+  "@scanFailed": {
+    "placeholders": {
+      "stage": { "type": "String" },
+      "error": { "type": "String" }
+    }
+  },
+  "scanNoCode": "没识别出码——试试正对屏幕、避开反光、靠近一点",
+  "scanSavedDevice": "已保存设备 {name} ({ip})",
+  "@scanSavedDevice": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "ip": { "type": "String" }
+    }
+  },
+  "scanOcrResult": "OCR 结果",
+  "scanNoText": "（未识别到文字）",
+  "scanDecodeResult": "解码结果",
+  "scanStagePercent": "{stage}（{percent}%）",
+  "@scanStagePercent": {
+    "placeholders": {
+      "stage": { "type": "String" },
+      "percent": { "type": "int" }
+    }
+  },
+
+  "qrTitle": "生成二维码 / 条形码",
+  "qrTemplateTitle": "内容模板",
+  "qrPreview": "预览",
+  "qrGenerate": "生成",
+  "qrGenerating": "生成中…",
+  "qrNotSet": "未设置",
+  "qrGroupMatrix": "二维码 / 矩阵码",
+  "qrGroupStacked": "堆叠二维",
+  "qrGroupRetail": "商品条码",
+  "qrGroupIndustrial": "物流 / 工业",
+  "qrGroupOther": "其他",
+  "qrNameQrCode": "二维码",
+  "qrDim2": "二维",
+  "qrDim1": "一维",
+  "qrHintQrCode": "任意文本、网址、中文都可以",
+  "qrHintDataMatrix": "任意文本，体积小，常印在小零件上",
+  "qrHintAztec": "任意文本，常见于登机牌、火车票",
+  "qrHintPdf417": "任意文本，可存较长内容，常见于各类证件",
+  "qrHintEan13": "12 或 13 位数字，末位是校验位",
+  "qrHintEan8": "7 或 8 位数字",
+  "qrHintUpcA": "11 或 12 位数字",
+  "qrHintUpcE": "7 或 8 位数字，首位须为 0 或 1",
+  "qrHintCode128": "任意 ASCII 文本，快递单最常用",
+  "qrHintCode39": "限 0-9 A-Z 与 - . $ / + % 和空格",
+  "qrHintCode93": "任意 ASCII 文本",
+  "qrHintItf": "偶数位数字，常见于外箱包装",
+  "qrHintCodabar": "数字加 A/B/C/D 作起止符，如 A123456B",
+  "qrHintTelepen": "任意 ASCII 文本，较少使用",
+  "qrTplCustom": "自定义",
+  "qrTplWifi": "WiFi",
+  "qrTplUrl": "网址",
+  "qrTplVcard": "名片",
+  "qrTplPhone": "电话",
+  "qrTplSms": "短信",
+  "qrTplEmail": "邮件",
+  "qrTplCalendar": "日历",
+  "qrTplGeo": "位置",
+  "qrFormatLabel": "{name}（{dim}）",
+  "@qrFormatLabel": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "dim": { "type": "String" }
+    }
+  },
+  "qrContentReq": "内容要求：{hint}",
+  "@qrContentReq": {
+    "placeholders": {
+      "hint": { "type": "String" }
+    }
+  },
+  "qrSelfOnly": "注意：{name} 只能生成，本应用的扫一扫识别不了，用其他扫码工具可以正常扫。",
+  "@qrSelfOnly": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "qrRequirement": "「{name}」要求：{hint}",
+  "@qrRequirement": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "hint": { "type": "String" }
+    }
+  },
+  "qrFillField": "请填写{label}",
+  "@qrFillField": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "qrFillContent": "请填写内容",
+  "qrNoDigits": "{label}里没有可用数字",
+  "@qrNoDigits": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "qrPickStart": "请选择开始时间",
+  "qrGeoNotNumber": "经纬度必须是数字",
+  "qrFieldContent": "内容",
+  "qrFieldSsid": "网络名称 (SSID)",
+  "qrFieldPass": "密码",
+  "qrPassHint": "加密方式选「无密码」时留空",
+  "qrFieldSecurity": "加密方式",
+  "qrEncNone": "无密码",
+  "qrFieldUrl": "网址",
+  "qrUrlHint": "例如 example.com，不写开头会自动补 https://",
+  "qrFieldName": "姓名",
+  "qrFieldMobile": "手机",
+  "qrFieldEmail": "邮箱",
+  "qrFieldOrg": "公司",
+  "qrFieldJob": "职位",
+  "qrFieldPhoneNumber": "电话号码",
+  "qrPhoneHint": "空格、横线会被自动去掉",
+  "qrFieldSmsTo": "收件号码",
+  "qrFieldSmsBody": "短信内容",
+  "qrFieldMailTo": "收件邮箱",
+  "qrFieldSubject": "主题",
+  "qrFieldBody": "正文",
+  "qrFieldCalTitle": "标题",
+  "qrStartTime": "开始时间",
+  "qrEndTime": "结束时间",
+  "qrEndHint": "不选结束时间则按开始后 1 小时计算",
+  "qrFieldLocation": "地点",
+  "qrFieldLat": "纬度",
+  "qrFieldLng": "经度",
+
+  "lanTitle": "局域网传输",
+  "lanReceiver": "接收端",
+  "lanSender": "发送端",
+  "lanStartServer": "启动服务",
+  "lanStopServer": "停止服务",
+  "lanServerKeepAlive": "退出本页面服务仍会保持运行，对端可以继续连",
+  "lanQrHint": "用另一台设备扫描此二维码配对",
+  "lanUnpaired": "未配对设备",
+  "lanPeerInfo": "目标: {name} ({addr})",
+  "@lanPeerInfo": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "addr": { "type": "String" }
+    }
+  },
+  "lanPair": "扫码配对",
+  "lanTest": "测试",
+  "lanTextContent": "文本内容",
+  "lanSendText": "发送文本",
+  "lanSendFile": "发送文件",
+  "lanLogTitle": "记录",
+  "lanLsTitle": "LocalSend 设备",
+  "lanLsOff": "兼容层未运行",
+  "lanLsPortInfo": "端口 {port}，与官方 LocalSend 自动互通",
+  "@lanLsPortInfo": {
+    "placeholders": {
+      "port": { "type": "int" }
+    }
+  },
+  "lanLsNotice": "注意：{error}",
+  "@lanLsNotice": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanNoDevice": "未发现设备。确认两台设备连的是同一个网络，稍等几秒",
+  "lanSendToAlias": "发送文件到 {alias}",
+  "@lanSendToAlias": {
+    "placeholders": {
+      "alias": { "type": "String" }
+    }
+  },
+  "lanSendFailed": "发送失败：{error}",
+  "@lanSendFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanSnackSent": "已发送 {name}",
+  "@lanSnackSent": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "lanLogLsDisabled": "LocalSend 兼容层已按设置关闭",
+  "lanLogLsStarted": "LocalSend 兼容层已启动，端口 {port}，官方 LocalSend 可自动发现本机",
+  "@lanLogLsStarted": {
+    "placeholders": {
+      "port": { "type": "int" }
+    }
+  },
+  "lanLogLsStartedNoMcast": "LocalSend 兼容层已启动（端口 {port}），但多播不可用：{reason}，只能被主动扫描发现",
+  "@lanLogLsStartedNoMcast": {
+    "placeholders": {
+      "port": { "type": "int" },
+      "reason": { "type": "String" }
+    }
+  },
+  "lanLogLsStartFailed": "LocalSend 兼容层启动失败：{error}",
+  "@lanLogLsStartFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanMcastUnavailable": "多播不可用",
+  "lanUnknown": "未知原因",
+  "lanLogLsDiscovered": "发现 LocalSend 设备：{alias}（{addr}）",
+  "@lanLogLsDiscovered": {
+    "placeholders": {
+      "alias": { "type": "String" },
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogLsRegistered": "{alias} 通过 LocalSend 协议注册到本机（{ip}）",
+  "@lanLogLsRegistered": {
+    "placeholders": {
+      "alias": { "type": "String" },
+      "ip": { "type": "String" }
+    }
+  },
+  "lanLogLsIncoming": "{alias} 请求推送 {n} 个文件（{ip}，共 {size}）",
+  "@lanLogLsIncoming": {
+    "placeholders": {
+      "alias": { "type": "String" },
+      "n": { "type": "int" },
+      "ip": { "type": "String" },
+      "size": { "type": "String" }
+    }
+  },
+  "lanLogLsReceived": "LocalSend 收到文件：{name}",
+  "@lanLogLsReceived": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "lanLogLsRecvFailed": "LocalSend 文件接收失败：{name}（{error}）",
+  "@lanLogLsRecvFailed": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogLsSessionEnd": "LocalSend 会话结束：成功 {ok}，失败 {fail}",
+  "@lanLogLsSessionEnd": {
+    "placeholders": {
+      "ok": { "type": "int" },
+      "fail": { "type": "int" }
+    }
+  },
+  "lanLogLsError": "LocalSend：{message}",
+  "@lanLogLsError": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "lanLogTextReceived": "收到文本 [{kind}] 来自 {from}:\n{text}",
+  "@lanLogTextReceived": {
+    "placeholders": {
+      "kind": { "type": "String" },
+      "from": { "type": "String" },
+      "text": { "type": "String" }
+    }
+  },
+  "lanLogReverseRegistered": "✓ {name} 已反向注册，现在可以互相发送\n{addr}",
+  "@lanLogReverseRegistered": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogServerStarted": "服务已启动：{addr}",
+  "@lanLogServerStarted": {
+    "placeholders": {
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogServerPort": "服务已启动，端口 {port}",
+  "@lanLogServerPort": {
+    "placeholders": {
+      "port": { "type": "int" }
+    }
+  },
+  "lanLogServerAlts": "备选地址: {list}",
+  "@lanLogServerAlts": {
+    "placeholders": {
+      "list": { "type": "String" }
+    }
+  },
+  "lanLogServerStopped": "服务已停止",
+  "lanLogStartFailed": "启动失败: {error}",
+  "@lanLogStartFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogSavedDownloads": "\n已存入系统\"下载\"目录",
+  "lanLogSaveFailed": "\n⚠ 存入下载目录失败（{error}），文件仍留在应用私有目录",
+  "@lanLogSaveFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogFileReceived": "收到来自 {from} 的文件 {name}（{size}）\n已保存: {path}{note}",
+  "@lanLogFileReceived": {
+    "placeholders": {
+      "from": { "type": "String" },
+      "name": { "type": "String" },
+      "size": { "type": "String" },
+      "path": { "type": "String" },
+      "note": { "type": "String" }
+    }
+  },
+  "lanLogTestFailed": "测试连接出错: {error}",
+  "@lanLogTestFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogPeerUnreachable": "⚠ 连不上 {name}（尝试了 {ips}）。\n请确认两台设备连的是同一个 Wi-Fi/局域网，且对方已启动接收服务",
+  "@lanLogPeerUnreachable": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "ips": { "type": "String" }
+    }
+  },
+  "lanLogConnOk": "✓ 连接正常 {addr}",
+  "@lanLogConnOk": {
+    "placeholders": {
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogConnOkAlt": "✓ 连接正常，改用可达地址 {addr}（二维码首选的 {preferred} 连不上）",
+  "@lanLogConnOkAlt": {
+    "placeholders": {
+      "addr": { "type": "String" },
+      "preferred": { "type": "String" }
+    }
+  },
+  "lanLogNeedServer": "⚠ 本机接收服务未运行，{name} 还不能给本机发送。\n点上方「启动服务」后，请对方重新扫一次你的二维码",
+  "@lanLogNeedServer": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "lanLogToldPeer": "✓ 已把本机地址告诉 {name}，现在双方都能互发",
+  "@lanLogToldPeer": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "lanLogReverseFailed": "⚠ 无法反向注册给 {name}：{error}",
+  "@lanLogReverseFailed": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogPaired": "已配对设备: {name} ({addr})",
+  "@lanLogPaired": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogTextSent": "已发送文本到 {name}",
+  "@lanLogTextSent": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "lanLogSendTextFailed": "⚠ 发送文本失败：{error}",
+  "@lanLogSendTextFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogFileSent": "已发送文件 {name} 到 {to}",
+  "@lanLogFileSent": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+  "lanLogSendFileFailed": "⚠ 发送文件失败：{error}",
+  "@lanLogSendFileFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogLsSent": "已通过 LocalSend 发送 {name} 到 {alias}",
+  "@lanLogLsSent": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "alias": { "type": "String" }
+    }
+  },
+  "lanLogLsSendFailed": "LocalSend 发送失败：{error}",
+  "@lanLogLsSendFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "aboutTitle": "关于",
+  "aboutNoLan": "未检测到局域网地址",
+  "aboutVersion": "版本 {version} ({build})",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": { "type": "String" },
+      "build": { "type": "String" }
+    }
+  },
+  "aboutLoadFailed": "信息读取失败",
+  "aboutSectionDevice": "本机信息",
+  "aboutLocalIp": "本地 IP",
+  "aboutListenPort": "监听端口",
+  "aboutFingerprint": "设备指纹",
+  "aboutFingerprintHint": "启用 LocalSend 兼容后生成，对方据此识别本机身份",
+  "aboutSectionLicense": "开源许可",
+  "aboutLicenseTitle": "本项目采用 Apache License 2.0",
+  "aboutLicenseBody": "允许商业使用、修改与分发。分发本软件的副本时，\n请保留仓库中的 LICENSE 与 NOTICE 文件。\n\n完整许可文本见项目根目录的 LICENSE 文件。",
+  "aboutSectionThirdParty": "第三方组件",
+
+  "commonSaved": "已保存",
+  "commonSaveFailed": "保存失败：{error}",
+  "@commonSaveFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "setConfigLoadFailed": "配置读取失败",
+  "setSectionTransfer": "互传",
+  "setDeviceName": "设备名称",
+  "setDeviceNameHelp": "对方设备列表里显示的名字",
+  "setPortLabel": "监听端口",
+  "setPortHelp": "默认 {port}。被占用时会自动改用其他端口，不影响互传",
+  "@setPortHelp": {
+    "placeholders": {
+      "port": { "type": "int" }
+    }
+  },
+  "setPinLabel": "传输 PIN（可选）",
+  "setPinHelp": "留空表示不校验。设置后，对方必须输入才能推送文件",
+  "setVerifyHash": "校验文件哈希",
+  "setVerifyHashSub": "收到文件后比对发送方提供的 SHA-256",
+  "setLsCompat": "启用 LocalSend 兼容",
+  "setLsCompatSub": "与官方 LocalSend 同一网络自动互通：不用扫码，进入传输页就会自动发现",
+  "setSectionAbout": "关于",
+  "setAboutTitle": "关于互传助手",
+  "setAboutSub": "版本、开源许可与第三方组件",
+
+  "onBcLabel": "前{year}",
+  "@onBcLabel": {
+    "placeholders": {
+      "year": { "type": "int" }
     }
   }
 }

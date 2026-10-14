@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../src/rust/api/countdown.dart';
 import 'frb_util.dart';
 
@@ -93,7 +94,9 @@ class _CountdownPageState extends State<CountdownPage> {
       await refreshCountdownWidgets();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('操作失败: $e')));
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.cdOpFailed('$e'))));
     }
   }
 
@@ -105,17 +108,20 @@ class _CountdownPageState extends State<CountdownPage> {
   }
 
   Future<void> _delete(CountdownEvent ev) async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('删除「${ev.title}」'),
-        content: const Text('删除后无法恢复。'),
+        title: Text(l10n.cdDeleteTitle(ev.title)),
+        content: Text(l10n.cdDeleteMsg),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.commonCancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('删除'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -148,46 +154,50 @@ class _CountdownPageState extends State<CountdownPage> {
   ///
   /// 状态词不放这里——「天 · 还剩」读起来语序是反的。它挪到日期那一行，
   /// 排版就变成「128 / 天 / 还剩 · 2026-12-20」，一眼能读通。
-  String _dayCaption(CountdownEvent ev) => '天';
+  String _dayCaption(CountdownEvent ev) =>
+      AppLocalizations.of(context)!.commonDayUnit;
 
   /// 状态词：还剩 / 已过 / 还有 / 距下次 / 就是今天。
   String _statusLabel(CountdownEvent ev) {
+    final l10n = AppLocalizations.of(context)!;
     final d = ev.daysLeft.toInt();
     switch (ev.mode) {
       case CountMode.countdown:
-        if (d > 0) return '还剩';
-        if (d == 0) return '就是今天';
-        return '已过';
+        if (d > 0) return l10n.cdRemain;
+        if (d == 0) return l10n.cdToday;
+        return l10n.cdPassed;
       case CountMode.countup:
-        if (d < 0) return '已过';
-        if (d == 0) return '就是今天';
-        return '还有';
+        if (d < 0) return l10n.cdPassed;
+        if (d == 0) return l10n.cdToday;
+        return l10n.cdHas;
       case CountMode.yearly:
-        if (d > 0) return '距下次';
-        return '就是今天';
+        if (d > 0) return l10n.cdUntilNext;
+        return l10n.cdToday;
     }
   }
 
   String _modeLabel(CountMode mode) {
+    final l10n = AppLocalizations.of(context)!;
     switch (mode) {
       case CountMode.countdown:
-        return '倒数';
+        return l10n.cdModeCountdown;
       case CountMode.countup:
-        return '正数';
+        return l10n.cdModeCountup;
       case CountMode.yearly:
-        return '每年';
+        return l10n.cdModeYearly;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('倒数日'),
+        title: Text(l10n.cdTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: '刷新',
+            tooltip: l10n.commonRefresh,
             onPressed: _load,
           ),
         ],
@@ -195,7 +205,7 @@ class _CountdownPageState extends State<CountdownPage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openEditor(),
         icon: const Icon(Icons.add),
-        label: const Text('添加倒数日'),
+        label: Text(AppLocalizations.of(context)!.cdAdd),
       ),
       body: _buildBody(),
     );
@@ -205,6 +215,7 @@ class _CountdownPageState extends State<CountdownPage> {
     if (_loading) return const Center(child: CircularProgressIndicator());
 
     if (_error != null) {
+      final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -213,9 +224,9 @@ class _CountdownPageState extends State<CountdownPage> {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 12),
-              Text('读取失败：$_error', textAlign: TextAlign.center),
+              Text(l10n.cdLoadFailed('$_error'), textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              FilledButton(onPressed: _load, child: const Text('重试')),
+              FilledButton(onPressed: _load, child: Text(l10n.commonRetry)),
             ],
           ),
         ),
@@ -228,7 +239,8 @@ class _CountdownPageState extends State<CountdownPage> {
         _lifeCard(),
         const SizedBox(height: 16),
         if (_events.isEmpty) _emptyState() else ...[
-          Text('共 ${_events.length} 个倒数日', style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.cdTotal(_events.length),
+              style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 8),
           for (final ev in _events) _eventCard(ev),
         ],
@@ -243,10 +255,11 @@ class _CountdownPageState extends State<CountdownPage> {
             children: [
               Icon(Icons.hourglass_empty, size: 48, color: Colors.grey[400]),
               const SizedBox(height: 12),
-              const Text('还没有倒数日', style: TextStyle(fontSize: 16)),
+              Text(AppLocalizations.of(context)!.cdEmpty,
+                  style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 4),
               Text(
-                '把重要的日子记下来，桌面部件会替你盯着',
+                AppLocalizations.of(context)!.cdEmptyHint,
                 style: TextStyle(color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
@@ -256,13 +269,14 @@ class _CountdownPageState extends State<CountdownPage> {
       );
 
   Widget _lifeCard() {
+    final l10n = AppLocalizations.of(context)!;
     final progress = _progress;
     if (progress == null) {
       return Card(
         child: ListTile(
           leading: const Icon(Icons.cake_outlined, size: 32),
-          title: const Text('人生进度'),
-          subtitle: const Text('设置出生日期后，这里和桌面部件都会显示进度'),
+          title: Text(l10n.cdLifeTitle),
+          subtitle: Text(l10n.cdLifeSubtitle),
           trailing: const Icon(Icons.chevron_right),
           onTap: _editLife,
         ),
@@ -280,15 +294,17 @@ class _CountdownPageState extends State<CountdownPage> {
               children: [
                 const Icon(Icons.cake_outlined),
                 const SizedBox(width: 8),
-                Text('人生进度', style: Theme.of(context).textTheme.titleMedium),
+                Text(l10n.cdLifeTitle,
+                    style: Theme.of(context).textTheme.titleMedium),
                 const Spacer(),
-                TextButton(onPressed: _editLife, child: const Text('修改')),
+                TextButton(
+                    onPressed: _editLife, child: Text(l10n.cdLifeEdit)),
               ],
             ),
             if (_life?.quote.isNotEmpty ?? false) ...[
               const SizedBox(height: 2),
               Text(
-                '「${_life!.quote}」',
+                l10n.cdQuote(_life!.quote),
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
@@ -307,13 +323,14 @@ class _CountdownPageState extends State<CountdownPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('已过 ${pct.toStringAsFixed(2)}%'),
-                Text('已活 ${progress.livedDays.toInt()} 天'),
+                Text(l10n.cdLifePassed(pct.toStringAsFixed(2))),
+                Text(l10n.cdLifeLived(progress.livedDays.toInt())),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              '距 ${_life?.lifespan ?? ''} 岁预期寿命还有 ${progress.daysLeft.toInt()} 天',
+              l10n.cdLifeRemaining(
+                  _life?.lifespan ?? 0, progress.daysLeft.toInt()),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -420,6 +437,7 @@ class _CountdownPageState extends State<CountdownPage> {
       );
 
   void _showMenu(CountdownEvent ev) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -428,8 +446,8 @@ class _CountdownPageState extends State<CountdownPage> {
           children: [
             ListTile(
               leading: const Icon(Icons.push_pin_outlined),
-              title: Text(ev.pinned ? '取消置顶' : '置顶'),
-              subtitle: const Text('置顶的会排在最前，桌面部件也优先显示'),
+              title: Text(ev.pinned ? l10n.cdUnpin : l10n.cdPin),
+              subtitle: Text(l10n.cdPinHint),
               onTap: () {
                 Navigator.pop(ctx);
                 _apply((path) => countdownTogglePin(path: path, id: ev.id));
@@ -437,7 +455,7 @@ class _CountdownPageState extends State<CountdownPage> {
             ),
             ListTile(
               leading: const Icon(Icons.edit_outlined),
-              title: const Text('编辑'),
+              title: Text(l10n.commonEdit),
               onTap: () {
                 Navigator.pop(ctx);
                 _openEditor(ev);
@@ -445,7 +463,8 @@ class _CountdownPageState extends State<CountdownPage> {
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('删除', style: TextStyle(color: Colors.red)),
+              title: Text(l10n.commonDelete,
+                  style: const TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.pop(ctx);
                 _delete(ev);
@@ -518,9 +537,11 @@ class _EventEditorPageState extends State<EventEditorPage> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     final title = _title.text.trim();
     if (title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请填写标题')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.cdErrTitleRequired)));
       return;
     }
     setState(() => _saving = true);
@@ -543,31 +564,34 @@ class _EventEditorPageState extends State<EventEditorPage> {
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存失败: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.cdSaveFailed('$e'))));
       setState(() => _saving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.existing == null ? '添加倒数日' : '编辑倒数日')),
+      appBar: AppBar(
+          title: Text(widget.existing == null ? l10n.cdAdd : l10n.cdEditTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           TextField(
             controller: _title,
-            decoration: const InputDecoration(
-              labelText: '标题',
-              hintText: '例如：考研初试、结婚纪念日',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.cdFieldTitle,
+              hintText: l10n.cdFieldTitleHint,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
           Card(
             child: ListTile(
               leading: const Icon(Icons.event),
-              title: const Text('目标日期'),
+              title: Text(l10n.cdFieldTarget),
               subtitle: Text(formatDate(_date)),
               trailing: const Icon(Icons.chevron_right),
               onTap: _saving ? null : _pickDate,
@@ -576,19 +600,22 @@ class _EventEditorPageState extends State<EventEditorPage> {
           const SizedBox(height: 16),
           DropdownButtonFormField<CountMode>(
             initialValue: _mode,
-            decoration: const InputDecoration(
-              labelText: '计数方式',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.cdFieldMode,
+              border: const OutlineInputBorder(),
             ),
-            items: const [
-              DropdownMenuItem(value: CountMode.countdown, child: Text('倒数：距离目标日还剩几天')),
-              DropdownMenuItem(value: CountMode.countup, child: Text('正数：目标日已经过去几天')),
-              DropdownMenuItem(value: CountMode.yearly, child: Text('每年重复：生日、纪念日')),
+            items: [
+              DropdownMenuItem(
+                  value: CountMode.countdown, child: Text(l10n.cdModeCountdownFull)),
+              DropdownMenuItem(
+                  value: CountMode.countup, child: Text(l10n.cdModeCountupFull)),
+              DropdownMenuItem(
+                  value: CountMode.yearly, child: Text(l10n.cdModeYearlyFull)),
             ],
             onChanged: _saving ? null : (v) => setState(() => _mode = v ?? CountMode.countdown),
           ),
           const SizedBox(height: 16),
-          Text('主题色', style: Theme.of(context).textTheme.titleSmall),
+          Text(l10n.cdFieldColor, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
           Wrap(
             spacing: 10,
@@ -619,16 +646,16 @@ class _EventEditorPageState extends State<EventEditorPage> {
           TextField(
             controller: _note,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: '备注（可选）',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.cdFieldNote,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 8),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('置顶'),
-            subtitle: const Text('排在列表最前，桌面部件也优先显示'),
+            title: Text(l10n.cdPin),
+            subtitle: Text(l10n.cdPinSwitchHint),
             value: _pinned,
             onChanged: _saving ? null : (v) => setState(() => _pinned = v),
           ),
@@ -643,7 +670,7 @@ class _EventEditorPageState extends State<EventEditorPage> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('保存'),
+                  : Text(l10n.commonSave),
             ),
           ),
         ],
@@ -673,9 +700,18 @@ class _LifeEditorPageState extends State<LifeEditorPage> {
     super.initState();
     final ex = widget.existing;
     _lifespan = TextEditingController(text: (ex?.lifespan ?? 80).toString());
-    // 从没设置过时预填默认那句，与 Rust 侧 default_quote 保持同一句。
-    _quote = TextEditingController(text: ex?.quote ?? '今天不走，明天要跑。');
+    _quote = TextEditingController(text: ex?.quote ?? '');
     _birthday = _parse(ex?.birthday) ?? DateTime(2000, 1, 1);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 从没设置过时预填默认格言（跟随界面语言）；用户把文字删光后存的是
+    // 空串，重新进入不再替他补——empty 判断就是干这个的。
+    if (widget.existing == null && _quote.text.isEmpty) {
+      _quote.text = AppLocalizations.of(context)!.cdDefaultQuote;
+    }
   }
 
   DateTime? _parse(String? s) {
@@ -699,17 +735,20 @@ class _LifeEditorPageState extends State<LifeEditorPage> {
   Future<void> _save({bool clear = false}) async {
     // 校验一律提到第一个 await 之前：那时 context 必然还活着，
     // 也就不必为「跨 async gap 使用 BuildContext」补 mounted 判断。
+    final l10n = AppLocalizations.of(context)!;
     DateTime? birthday;
     var lifespan = 0;
     if (!clear) {
       birthday = _birthday;
       if (birthday == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请选择出生日期')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.cdErrPickBirthday)));
         return;
       }
       lifespan = int.tryParse(_lifespan.text.trim()) ?? 0;
       if (lifespan <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('预期寿命需为正整数')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.cdErrLifespan)));
         return;
       }
     }
@@ -734,7 +773,9 @@ class _LifeEditorPageState extends State<LifeEditorPage> {
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('保存失败: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              Text(AppLocalizations.of(context)!.cdSaveFailed('$e'))));
       setState(() => _saving = false);
     }
   }
@@ -751,16 +792,18 @@ class _LifeEditorPageState extends State<LifeEditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('人生进度设置')),
+      appBar: AppBar(title: Text(l10n.cdLifeSetupTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
             child: ListTile(
               leading: const Icon(Icons.cake_outlined),
-              title: const Text('出生日期'),
-              subtitle: Text(_birthday == null ? '未设置' : formatDate(_birthday!)),
+              title: Text(l10n.cdBirthday),
+              subtitle:
+                  Text(_birthday == null ? l10n.cdNotSet : formatDate(_birthday!)),
               trailing: const Icon(Icons.chevron_right),
               onTap: _saving ? null : _pickBirthday,
             ),
@@ -769,20 +812,20 @@ class _LifeEditorPageState extends State<LifeEditorPage> {
           TextField(
             controller: _lifespan,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: '预期寿命（岁）',
-              helperText: '用于折算总天数，随时可以改',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.cdLifespanField,
+              helperText: l10n.cdLifespanHelp,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _quote,
             maxLength: 30,
-            decoration: const InputDecoration(
-              labelText: '人生格言（可选）',
-              helperText: '显示在进度卡片和桌面部件顶部',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.cdQuoteField,
+              helperText: l10n.cdQuoteHelp,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 24),
@@ -796,14 +839,15 @@ class _LifeEditorPageState extends State<LifeEditorPage> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('保存'),
+                  : Text(l10n.commonSave),
             ),
           ),
           if (widget.existing != null) ...[
             const SizedBox(height: 12),
             TextButton(
               onPressed: _saving ? null : () => _save(clear: true),
-              child: const Text('清除人生进度', style: TextStyle(color: Colors.red)),
+              child: Text(l10n.cdClearLife,
+                  style: const TextStyle(color: Colors.red)),
             ),
           ],
         ],

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../src/rust/api/qr.dart';
 
 /// 一个条码格式。
@@ -9,21 +10,11 @@ class _Format {
   /// 传给 Rust 的 rxing 格式名，与解码结果里的 format 字段完全一致。
   final String id;
 
-  final String name;
-
-  /// 输入约束，选中该格式时显示在输入框下方。
-  ///
-  /// 这些不是建议而是硬校验：字符集或位数不对时 zxing 直接抛异常，
-  /// 所以得提前告诉用户，而不是等他点完生成再报错。
-  final String hint;
-
   /// 本应用的「扫一扫」能否识别。false 表示只能生成、扫不回来。
   final bool selfScannable;
 
   const _Format(
-    this.id,
-    this.name,
-    this.hint, {
+    this.id, {
     this.selfScannable = true,
   });
 
@@ -36,61 +27,110 @@ class _Format {
 
 /// 格式分组。
 class _FormatGroup {
-  final String title;
+  final _GroupKind kind;
   final List<_Format> formats;
 
-  const _FormatGroup(this.title, this.formats);
+  const _FormatGroup(this.kind, this.formats);
 }
 
+/// 分组名走 l10n，enum 只当键用。
+enum _GroupKind { matrix, stacked, retail, industrial, other }
+
 const List<_FormatGroup> _groups = [
-  _FormatGroup('二维码 / 矩阵码', [
-    _Format('QR_CODE', '二维码', '任意文本、网址、中文都可以'),
-    _Format('DATA_MATRIX', 'Data Matrix', '任意文本，体积小，常印在小零件上'),
-    _Format('AZTEC', 'Aztec', '任意文本，常见于登机牌、火车票'),
+  _FormatGroup(_GroupKind.matrix, [
+    _Format('QR_CODE'),
+    _Format('DATA_MATRIX'),
+    _Format('AZTEC'),
   ]),
-  _FormatGroup('堆叠二维', [
-    _Format('PDF_417', 'PDF 417', '任意文本，可存较长内容，常见于各类证件'),
+  _FormatGroup(_GroupKind.stacked, [
+    _Format('PDF_417'),
   ]),
-  _FormatGroup('商品条码', [
-    _Format('EAN_13', 'EAN-13', '12 或 13 位数字，末位是校验位'),
-    _Format('EAN_8', 'EAN-8', '7 或 8 位数字'),
-    _Format('UPC_A', 'UPC-A', '11 或 12 位数字'),
+  _FormatGroup(_GroupKind.retail, [
+    _Format('EAN_13'),
+    _Format('EAN_8'),
+    _Format('UPC_A'),
     // UPC-E：rxing 能生成、也校验过末位，但它的解码器读不回来
     // （默认 / TryHarder / 限定 reader / PureBarcode 四种策略一律
     // NotFoundException），换别的扫码工具则正常。如实标注，不假装能用。
-    _Format('UPC_E', 'UPC-E', '7 或 8 位数字，首位须为 0 或 1',
-        selfScannable: false),
+    _Format('UPC_E', selfScannable: false),
   ]),
-  _FormatGroup('物流 / 工业', [
-    _Format('CODE_128', 'Code 128', '任意 ASCII 文本，快递单最常用'),
-    // $ 在 Dart 字符串字面量里要转义
-    _Format('CODE_39', 'Code 39', '限 0-9 A-Z 与 - . \$ / + % 和空格'),
-    _Format('CODE_93', 'Code 93', '任意 ASCII 文本'),
-    _Format('ITF', 'ITF', '偶数位数字，常见于外箱包装'),
-    _Format('CODABAR', 'Codabar', '数字加 A/B/C/D 作起止符，如 A123456B'),
+  _FormatGroup(_GroupKind.industrial, [
+    _Format('CODE_128'),
+    _Format('CODE_39'),
+    _Format('CODE_93'),
+    _Format('ITF'),
+    _Format('CODABAR'),
   ]),
-  _FormatGroup('其他', [
-    _Format('TELEPEN', 'Telepen', '任意 ASCII 文本，较少使用',
-        selfScannable: false),
+  _FormatGroup(_GroupKind.other, [
+    _Format('TELEPEN', selfScannable: false),
   ]),
 ];
 
 final List<_Format> _allFormats = _groups.expand((g) => g.formats).toList();
 
+/// 格式显示名：品牌名（Data Matrix 等）全球一致不翻译，只有「二维码」跟随语言。
+String _nameOf(_Format f, AppLocalizations l10n) => switch (f.id) {
+      'QR_CODE' => l10n.qrNameQrCode,
+      'DATA_MATRIX' => 'Data Matrix',
+      'AZTEC' => 'Aztec',
+      'PDF_417' => 'PDF 417',
+      'EAN_13' => 'EAN-13',
+      'EAN_8' => 'EAN-8',
+      'UPC_A' => 'UPC-A',
+      'UPC_E' => 'UPC-E',
+      'CODE_128' => 'Code 128',
+      'CODE_39' => 'Code 39',
+      'CODE_93' => 'Code 93',
+      'ITF' => 'ITF',
+      'CODABAR' => 'Codabar',
+      'TELEPEN' => 'Telepen',
+      _ => f.id,
+    };
+
+/// 格式的内容约束，选中该格式时显示在输入框下方。
+///
+/// 这些不是建议而是硬校验：字符集或位数不对时 zxing 直接抛异常，
+/// 所以得提前告诉用户，而不是等他点完生成再报错。
+String _hintOf(_Format f, AppLocalizations l10n) => switch (f.id) {
+      'QR_CODE' => l10n.qrHintQrCode,
+      'DATA_MATRIX' => l10n.qrHintDataMatrix,
+      'AZTEC' => l10n.qrHintAztec,
+      'PDF_417' => l10n.qrHintPdf417,
+      'EAN_13' => l10n.qrHintEan13,
+      'EAN_8' => l10n.qrHintEan8,
+      'UPC_A' => l10n.qrHintUpcA,
+      'UPC_E' => l10n.qrHintUpcE,
+      'CODE_128' => l10n.qrHintCode128,
+      'CODE_39' => l10n.qrHintCode39,
+      'CODE_93' => l10n.qrHintCode93,
+      'ITF' => l10n.qrHintItf,
+      'CODABAR' => l10n.qrHintCodabar,
+      'TELEPEN' => l10n.qrHintTelepen,
+      _ => '',
+    };
+
+String _groupTitle(_GroupKind kind, AppLocalizations l10n) => switch (kind) {
+      _GroupKind.matrix => l10n.qrGroupMatrix,
+      _GroupKind.stacked => l10n.qrGroupStacked,
+      _GroupKind.retail => l10n.qrGroupRetail,
+      _GroupKind.industrial => l10n.qrGroupIndustrial,
+      _GroupKind.other => l10n.qrGroupOther,
+    };
+
 /// 内容模板：填表单，由 _buildPayload 拼成标准格式的文本再去生成。
 enum _Template { custom, wifi, url, vcard, phone, sms, email, calendar, geo }
 
-const Map<_Template, String> _templateLabel = {
-  _Template.custom: '自定义',
-  _Template.wifi: 'WiFi',
-  _Template.url: '网址',
-  _Template.vcard: '名片',
-  _Template.phone: '电话',
-  _Template.sms: '短信',
-  _Template.email: '邮件',
-  _Template.calendar: '日历',
-  _Template.geo: '位置',
-};
+String _tplLabel(_Template t, AppLocalizations l10n) => switch (t) {
+      _Template.custom => l10n.qrTplCustom,
+      _Template.wifi => l10n.qrTplWifi,
+      _Template.url => l10n.qrTplUrl,
+      _Template.vcard => l10n.qrTplVcard,
+      _Template.phone => l10n.qrTplPhone,
+      _Template.sms => l10n.qrTplSms,
+      _Template.email => l10n.qrTplEmail,
+      _Template.calendar => l10n.qrTplCalendar,
+      _Template.geo => l10n.qrTplGeo,
+    };
 
 /// 二维码 / 条形码生成页。
 class QrGenPage extends StatefulWidget {
@@ -149,19 +189,20 @@ class _QrGenPageState extends State<QrGenPage> {
 
   /// 由当前模板与输入内容拼出待生成的文本；内容不完整时返回 null。
   String? _buildPayload() {
+    final l10n = AppLocalizations.of(context)!;
     String need(String key, String label) {
       final v = _c(key).text.trim();
-      return v.isEmpty ? throw _FormError('请填写$label') : v;
+      return v.isEmpty ? throw _FormError(l10n.qrFillField(label)) : v;
     }
 
     switch (_template) {
       case _Template.custom:
         final t = _c('custom').text.trim();
-        if (t.isEmpty) throw _FormError('请填写内容');
+        if (t.isEmpty) throw _FormError(l10n.qrFillContent);
         return t;
 
       case _Template.wifi:
-        final ssid = need('wifiSsid', '网络名称');
+        final ssid = need('wifiSsid', l10n.qrFieldSsid);
         if (_wifiSecurity == 'nopass') {
           return 'WIFI:T:nopass;S:${_esc(ssid)};;';
         }
@@ -169,14 +210,14 @@ class _QrGenPageState extends State<QrGenPage> {
             'P:${_esc(_c('wifiPass').text)};;';
 
       case _Template.url:
-        final url = need('url', '网址');
+        final url = need('url', l10n.qrFieldUrl);
         // 不带 scheme 时补上 https://，否则很多扫码应用会当成纯文本。
         return RegExp(r'^[a-z][a-z0-9+.-]*:', caseSensitive: false).hasMatch(url)
             ? url
             : 'https://$url';
 
       case _Template.vcard:
-        final name = need('vcName', '姓名');
+        final name = need('vcName', l10n.qrFieldName);
         final buf = StringBuffer()
           ..writeln('BEGIN:VCARD')
           ..writeln('VERSION:3.0')
@@ -196,23 +237,26 @@ class _QrGenPageState extends State<QrGenPage> {
         return buf.toString();
 
       case _Template.phone:
-        final phone = _digits(need('phone', '电话号码'));
-        if (phone.isEmpty) throw _FormError('电话号码里没有可用数字');
+        final phone = _digits(need('phone', l10n.qrFieldPhoneNumber));
+        if (phone.isEmpty) {
+          throw _FormError(l10n.qrNoDigits(l10n.qrFieldPhoneNumber));
+        }
         return 'tel:$phone';
 
       case _Template.sms:
-        final to = _digits(need('smsTo', '收件号码'));
-        if (to.isEmpty) throw _FormError('收件号码里没有可用数字');
+        final to = _digits(need('smsTo', l10n.qrFieldSmsTo));
+        if (to.isEmpty) throw _FormError(l10n.qrNoDigits(l10n.qrFieldSmsTo));
         return 'SMSTO:$to:${_c('smsBody').text}';
 
       case _Template.email:
-        final to = need('mailTo', '收件邮箱');
+        final to = need('mailTo', l10n.qrFieldMailTo);
         return 'MATMSG:TO:$to;SUB:${_c('mailSubject').text};'
             'BODY:${_c('mailBody').text};;';
 
       case _Template.calendar:
-        final summary = need('calTitle', '标题');
-        final start = _calStart ?? (throw _FormError('请选择开始时间'));
+        final summary = need('calTitle', l10n.qrFieldCalTitle);
+        final start =
+            _calStart ?? (throw _FormError(l10n.qrPickStart));
         // 没选结束时间就按开始后一小时算：比要求用户必须填更顺手，
         // 也避免拼出零值时间戳。
         final endTime = _calEnd ?? start.add(const Duration(hours: 1));
@@ -227,7 +271,7 @@ class _QrGenPageState extends State<QrGenPage> {
         final lat = double.tryParse(_c('geoLat').text.trim());
         final lng = double.tryParse(_c('geoLng').text.trim());
         if (lat == null || lng == null) {
-          throw _FormError('经纬度必须是数字');
+          throw _FormError(l10n.qrGeoNotNumber);
         }
         return 'geo:$lat,$lng';
     }
@@ -311,7 +355,7 @@ class _QrGenPageState extends State<QrGenPage> {
   }
 
   String _fmtTime(DateTime? dt) {
-    if (dt == null) return '未设置';
+    if (dt == null) return AppLocalizations.of(context)!.qrNotSet;
     String p(int n) => n.toString().padLeft(2, '0');
     return '${dt.year}-${p(dt.month)}-${p(dt.day)} ${p(dt.hour)}:${p(dt.minute)}';
   }
@@ -353,13 +397,15 @@ class _QrGenPageState extends State<QrGenPage> {
   /// 选了内容模板时可用格式只剩二维码，因此除「二维码 / 矩阵码」外的分组
   /// 会整体隐藏，而不是摆一堆点不动的选项。
   List<Widget> _formatPicker() {
+    final l10n = AppLocalizations.of(context)!;
     final available = _availableFormats;
     return [
       for (final g in _groups)
         if (g.formats.any(available.contains)) ...[
           Padding(
             padding: const EdgeInsets.only(top: 4, bottom: 4),
-            child: Text(g.title, style: Theme.of(context).textTheme.bodySmall),
+            child: Text(_groupTitle(g.kind, l10n),
+                style: Theme.of(context).textTheme.bodySmall),
           ),
           Wrap(
             spacing: 8,
@@ -368,7 +414,7 @@ class _QrGenPageState extends State<QrGenPage> {
               for (final f in g.formats)
                 if (available.contains(f))
                   ChoiceChip(
-                    label: Text(f.name),
+                    label: Text(_nameOf(f, l10n)),
                     selected: f.id == _format.id,
                     onSelected: (_) => setState(() => _format = f),
                   ),
@@ -386,7 +432,9 @@ class _QrGenPageState extends State<QrGenPage> {
 
   /// 选中格式的说明：能装什么内容，以及能不能被本应用扫回来。
   Widget _formatHint(_Format f) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final name = _nameOf(f, l10n);
     return Card(
       color: scheme.secondaryContainer,
       child: Padding(
@@ -400,7 +448,8 @@ class _QrGenPageState extends State<QrGenPage> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    '${f.name}（${f.isMatrix ? '二维' : '一维'}）',
+                    l10n.qrFormatLabel(
+                        name, f.isMatrix ? l10n.qrDim2 : l10n.qrDim1),
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium
@@ -410,12 +459,11 @@ class _QrGenPageState extends State<QrGenPage> {
               ],
             ),
             const SizedBox(height: 6),
-            Text('内容要求：${f.hint}'),
+            Text(l10n.qrContentReq(_hintOf(f, l10n))),
             if (!f.selfScannable) ...[
               const SizedBox(height: 8),
               Text(
-                '注意：${f.name} 只能生成，本应用的扫一扫识别不了，'
-                '用其他扫码工具可以正常扫。',
+                l10n.qrSelfOnly(name),
                 style: TextStyle(color: scheme.error),
               ),
             ],
@@ -426,32 +474,35 @@ class _QrGenPageState extends State<QrGenPage> {
   }
 
   List<Widget> _templateForm() {
+    final l10n = AppLocalizations.of(context)!;
     switch (_template) {
       case _Template.custom:
         return [
           // 提示跟着选中格式走：选了 EAN-13 就直接说要 12/13 位数字，
           // 而不是笼统一句"任意文本"——那会让人以为随便输都能生成。
-          _field('内容', _c('custom'), hint: _format.hint),
+          _field(l10n.qrFieldContent, _c('custom'),
+              hint: _hintOf(_format, l10n)),
           ..._formatPicker(),
         ];
 
       case _Template.wifi:
         return [
-          _field('网络名称 (SSID)', _c('wifiSsid')),
-          _field('密码', _c('wifiPass'),
-              hint: '加密方式选「无密码」时留空'),
+          _field(l10n.qrFieldSsid, _c('wifiSsid')),
+          _field(l10n.qrFieldPass, _c('wifiPass'), hint: l10n.qrPassHint),
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: DropdownButtonFormField<String>(
               initialValue: _wifiSecurity,
-              decoration: const InputDecoration(
-                labelText: '加密方式',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.qrFieldSecurity,
+                border: const OutlineInputBorder(),
               ),
-              items: const [
-                DropdownMenuItem(value: 'WPA', child: Text('WPA/WPA2/WPA3')),
-                DropdownMenuItem(value: 'WEP', child: Text('WEP')),
-                DropdownMenuItem(value: 'nopass', child: Text('无密码')),
+              items: [
+                const DropdownMenuItem(
+                    value: 'WPA', child: Text('WPA/WPA2/WPA3')),
+                const DropdownMenuItem(value: 'WEP', child: Text('WEP')),
+                DropdownMenuItem(
+                    value: 'nopass', child: Text(l10n.qrEncNone)),
               ],
               onChanged: (v) => setState(() => _wifiSecurity = v ?? 'WPA'),
             ),
@@ -460,73 +511,78 @@ class _QrGenPageState extends State<QrGenPage> {
 
       case _Template.url:
         return [
-          _field('网址', _c('url'),
-              hint: '例如 example.com，不写开头会自动补 https://'),
+          _field(l10n.qrFieldUrl, _c('url'), hint: l10n.qrUrlHint),
         ];
 
       case _Template.vcard:
         return [
-          _field('姓名', _c('vcName')),
-          _field('手机', _c('vcPhone'), keyboardType: TextInputType.phone),
-          _field('邮箱', _c('vcEmail'), keyboardType: TextInputType.emailAddress),
-          _field('公司', _c('vcOrg')),
-          _field('职位', _c('vcTitle')),
-          _field('网址', _c('vcUrl')),
+          _field(l10n.qrFieldName, _c('vcName')),
+          _field(l10n.qrFieldMobile, _c('vcPhone'),
+              keyboardType: TextInputType.phone),
+          _field(l10n.qrFieldEmail, _c('vcEmail'),
+              keyboardType: TextInputType.emailAddress),
+          _field(l10n.qrFieldOrg, _c('vcOrg')),
+          _field(l10n.qrFieldJob, _c('vcTitle')),
+          _field(l10n.qrFieldUrl, _c('vcUrl')),
         ];
 
       case _Template.phone:
         return [
-          _field('电话号码', _c('phone'),
-              hint: '空格、横线会被自动去掉', keyboardType: TextInputType.phone),
+          _field(l10n.qrFieldPhoneNumber, _c('phone'),
+              hint: l10n.qrPhoneHint, keyboardType: TextInputType.phone),
         ];
 
       case _Template.sms:
         return [
-          _field('收件号码', _c('smsTo'), keyboardType: TextInputType.phone),
-          _field('短信内容', _c('smsBody'), maxLines: 3),
+          _field(l10n.qrFieldSmsTo, _c('smsTo'),
+              keyboardType: TextInputType.phone),
+          _field(l10n.qrFieldSmsBody, _c('smsBody'), maxLines: 3),
         ];
 
       case _Template.email:
         return [
-          _field('收件邮箱', _c('mailTo'), keyboardType: TextInputType.emailAddress),
-          _field('主题', _c('mailSubject')),
-          _field('正文', _c('mailBody'), maxLines: 4),
+          _field(l10n.qrFieldMailTo, _c('mailTo'),
+              keyboardType: TextInputType.emailAddress),
+          _field(l10n.qrFieldSubject, _c('mailSubject')),
+          _field(l10n.qrFieldBody, _c('mailBody'), maxLines: 4),
         ];
 
       case _Template.calendar:
         return [
-          _field('标题', _c('calTitle')),
-          _dateTimeTile('开始时间', _calStart, _pickStart),
-          _dateTimeTile('结束时间', _calEnd, _pickEnd),
+          _field(l10n.qrFieldCalTitle, _c('calTitle')),
+          _dateTimeTile(l10n.qrStartTime, _calStart, _pickStart),
+          _dateTimeTile(l10n.qrEndTime, _calEnd, _pickEnd),
           if (_calEnd == null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8, left: 12),
               child: Text(
-                '不选结束时间则按开始后 1 小时计算',
+                l10n.qrEndHint,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
-          _field('地点', _c('calLocation')),
+          _field(l10n.qrFieldLocation, _c('calLocation')),
         ];
 
       case _Template.geo:
         return [
-          _field('纬度', _c('geoLat'),
-              hint: '例如 31.2304', keyboardType: TextInputType.number),
-          _field('经度', _c('geoLng'),
-              hint: '例如 121.4737', keyboardType: TextInputType.number),
+          _field(l10n.qrFieldLat, _c('geoLat'),
+              hint: '31.2304', keyboardType: TextInputType.number),
+          _field(l10n.qrFieldLng, _c('geoLng'),
+              hint: '121.4737', keyboardType: TextInputType.number),
         ];
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('生成二维码 / 条形码')),
+      appBar: AppBar(title: Text(l10n.qrTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('内容模板', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.qrTemplateTitle,
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -534,7 +590,7 @@ class _QrGenPageState extends State<QrGenPage> {
             children: [
               for (final t in _Template.values)
                 ChoiceChip(
-                  label: Text(_templateLabel[t]!),
+                  label: Text(_tplLabel(t, l10n)),
                   selected: _template == t,
                   onSelected: (_) => setState(() {
                     _template = t;
@@ -561,7 +617,7 @@ class _QrGenPageState extends State<QrGenPage> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.qr_code_2),
-              label: Text(_busy ? '生成中…' : '生成'),
+              label: Text(_busy ? l10n.qrGenerating : l10n.qrGenerate),
               onPressed: _busy ? null : _generate,
             ),
           ),
@@ -584,7 +640,8 @@ class _QrGenPageState extends State<QrGenPage> {
                     // 附上该格式的要求，才知道该改成什么样。
                     const SizedBox(height: 8),
                     Text(
-                      '「${_format.name}」要求：${_format.hint}',
+                      l10n.qrRequirement(_nameOf(_format, l10n),
+                          _hintOf(_format, l10n)),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onErrorContainer,
                       ),
@@ -596,7 +653,7 @@ class _QrGenPageState extends State<QrGenPage> {
           ],
           if (_png != null) ...[
             const SizedBox(height: 20),
-            Text('预览', style: Theme.of(context).textTheme.titleMedium),
+            Text(l10n.qrPreview, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Card(
               child: Padding(

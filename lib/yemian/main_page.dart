@@ -8,8 +8,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/app_localizations.dart';
+import 'app_settings.dart';
+import 'city_picker.dart';
 import 'festival_prefs.dart';
 import 'festival_scan.dart';
 import 'festivals.dart';
@@ -26,8 +30,8 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-/// 选中城市存的键；存 IANA 标识而不是城市名——名字可能改，标识不会。
-const String _kCityLocation = 'main_city_location';
+/// 选中城市的键在 [AppSettingsModel] 侧（kCityLocation），
+/// 设置页与时钟共用同一份，这里只是引用。
 
 class _MainPageState extends State<MainPage> {
   CityInfo _city = kDefaultCity;
@@ -51,7 +55,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _loadCity() async {
     final sp = await SharedPreferences.getInstance();
-    final loc = sp.getString(_kCityLocation);
+    final loc = sp.getString(kCityLocation);
     if (loc == null) return;
     final city = cityByLocation(loc);
     if (mounted) setState(() => _city = city);
@@ -60,21 +64,13 @@ class _MainPageState extends State<MainPage> {
   Future<void> _selectCity(CityInfo city) async {
     if (mounted) setState(() => _city = city);
     final sp = await SharedPreferences.getInstance();
-    await sp.setString(_kCityLocation, city.location);
+    await sp.setString(kCityLocation, city.location);
   }
 
-  void _openCityPicker() {
-    // 泛型用 Object? 而非默认的 void：返回值要做 `is CityInfo` 判断，
-    // 对 void 做类型检查是编译错误。
-    showModalBottomSheet<Object?>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) => const _CityPickerSheet(),
-    ).then((value) {
-      // 底部弹层里选完直接改，这里只负责让卡片刷新。
-      if (value is CityInfo) _selectCity(value);
-    });
+  void _openCityPicker() async {
+    final city = await showCityPickerSheet(context);
+    // 弹层选完直接改，这里只负责让卡片刷新。
+    if (city != null && mounted) _selectCity(city);
   }
 
   void _push(Widget page) {
@@ -83,8 +79,9 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('主页面')),
+      appBar: AppBar(title: Text(l10n.mainTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -102,7 +99,7 @@ class _MainPageState extends State<MainPage> {
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.document_scanner,
-                    label: 'OCR 识别',
+                    label: l10n.mainOcr,
                     onTap: () => _push(
                         const ScanPage(initialMode: ScanMode.ocr)),
                   ),
@@ -111,7 +108,7 @@ class _MainPageState extends State<MainPage> {
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.qr_code_scanner,
-                    label: '二维码扫描',
+                    label: l10n.mainQrScan,
                     onTap: () => _push(
                         const ScanPage(initialMode: ScanMode.barcode)),
                   ),
@@ -120,7 +117,7 @@ class _MainPageState extends State<MainPage> {
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.timer_outlined,
-                    label: '秒表',
+                    label: l10n.mainStopwatch,
                     onTap: () => _push(const StopwatchPage()),
                   ),
                 ),
@@ -128,7 +125,7 @@ class _MainPageState extends State<MainPage> {
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.history_edu_outlined,
-                    label: '历史上的今天',
+                    label: l10n.mainOnThisDay,
                     onTap: () => _push(const OnThisDayPage()),
                   ),
                 ),
@@ -174,15 +171,13 @@ class _ClockCardState extends State<_ClockCard> {
     super.dispose();
   }
 
-  static const List<String> _week = [
-    '一', '二', '三', '四', '五', '六', '日',
-  ];
-
   String _two(int v) => v.toString().padLeft(2, '0');
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final loc = Localizations.localeOf(context).toString();
     final now = nowIn(widget.city);
     final offset = formatUtcOffset(now.timeZoneOffset);
 
@@ -202,8 +197,10 @@ class _ClockCardState extends State<_ClockCard> {
             ),
             const SizedBox(height: 6),
             Text(
-              '${now.year}年${now.month}月${now.day}日 '
-              '星期${_week[now.weekday - 1]}',
+              // 日期与星期交给 intl 按 locale 格式化：
+              // 中文「2026年10月13日 星期二」，英文「Oct 13, 2026 Tuesday」。
+              '${DateFormat.yMMMd(loc).format(now)} '
+              '${DateFormat.EEEE(loc).format(now)}',
               style: theme.textTheme.bodyLarge
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
@@ -222,7 +219,7 @@ class _ClockCardState extends State<_ClockCard> {
                     Text(
                       timezonesReady
                           ? '${widget.city.name} · $offset'
-                          : '${widget.city.name} · 时区库未就绪',
+                          : '${widget.city.name} · ${l10n.mainTzNotReady}',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const Icon(Icons.arrow_drop_down, size: 20),
@@ -272,15 +269,17 @@ class _TodayCard extends StatelessWidget {
     );
   }
 
-  String _distance(int days) {
-    if (days == 0) return '就在今天';
-    if (days == 1) return '明天';
-    return '还有 $days 天';
+  String _distance(AppLocalizations l10n, int days) {
+    if (days == 0) return l10n.mainToday;
+    if (days == 1) return l10n.mainTomorrow;
+    return l10n.mainInDays(days);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final loc = Localizations.localeOf(context).toString();
     final lunar = info.lunar;
 
     return Card(
@@ -289,16 +288,21 @@ class _TodayCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('今天', style: theme.textTheme.titleMedium),
+            Text(l10n.mainTodayTitle, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            _row(context, '公历',
-                '${today.year}年${today.month}月${today.day}日 ${info.weekText}'),
-            _row(context, '农历',
+            _row(
+                context,
+                l10n.mainSolar,
+                '${DateFormat.yMMMd(loc).format(today)} '
+                '${DateFormat.EEEE(loc).format(today)}'),
+            // 农历/干支/生肖/节气是中华文化数据本身，保持中文原样，
+            // 只有标签跟随界面语言。
+            _row(context, l10n.mainLunar,
                 '${lunar.getYearInChinese()}年'
                 '${lunar.getMonthInChinese()}${info.lunarDayText}'),
-            _row(context, '干支', info.ganZhiText),
-            _row(context, '生肖', lunar.getYearShengXiao()),
-            _row(context, '节气', info.jieQiText),
+            _row(context, l10n.mainGanZhi, info.ganZhiText),
+            _row(context, l10n.mainZodiac, lunar.getYearShengXiao()),
+            _row(context, l10n.mainJieQi, info.jieQiText),
             if (next != null) ...[
               const Divider(height: 20),
               Row(
@@ -307,7 +311,7 @@ class _TodayCard extends StatelessWidget {
                     child: Text.rich(
                       TextSpan(children: [
                         TextSpan(
-                            text: '下一个：${next!.name}',
+                            text: l10n.mainNextFestival(next!.name),
                             style: theme.textTheme.bodyMedium),
                         if (FestivalPrefs.showEmoji)
                           TextSpan(text: ' ${festivalEmoji(next!)}'),
@@ -315,7 +319,7 @@ class _TodayCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    _distance(next!.daysLeft),
+                    _distance(l10n, next!.daysLeft),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w600,
@@ -363,104 +367,6 @@ class _ActionCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 城市选择
-// ---------------------------------------------------------------------------
-
-/// 城市选择弹层：搜索框 + 分组列表，选中即返回 [CityInfo]。
-class _CityPickerSheet extends StatefulWidget {
-  const _CityPickerSheet();
-
-  @override
-  State<_CityPickerSheet> createState() => _CityPickerSheetState();
-}
-
-class _CityPickerSheetState extends State<_CityPickerSheet> {
-  final _ctrl = TextEditingController();
-  String _query = '';
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // 分组结果展平成混合行：大洲名（String）与首都（CityInfo）交替，
-    // 标题行只在该组有命中时出现。
-    final rows = <Object>[
-      for (final entry in searchCitiesGrouped(_query).entries) ...[
-        entry.key,
-        ...entry.value,
-      ],
-    ];
-    // 结果太多时把弹层撑高：给了七成屏，剩下的空间让列表自己滚。
-    final sheetHeight = MediaQuery.of(context).size.height * 0.7;
-
-    return SizedBox(
-      height: sheetHeight,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
-              controller: _ctrl,
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: '搜索国家或首都，如 日本、巴黎、asia',
-                prefixIcon: const Icon(Icons.search, size: 20),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onChanged: (v) => setState(() => _query = v),
-            ),
-          ),
-          Expanded(
-            child: rows.isEmpty
-                ? Center(
-                    child: Text('没有匹配「$_query」的国家或首都',
-                        style: Theme.of(context).textTheme.bodyMedium),
-                  )
-                : ListView.builder(
-                    itemCount: rows.length,
-                    itemBuilder: (context, i) {
-                      final row = rows[i];
-                      if (row is String) {
-                        // 大洲分组标题：上留白让它和上一组拉开距离。
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                          child: Text(
-                            row,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelMedium
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary,
-                                ),
-                          ),
-                        );
-                      }
-                      final c = row as CityInfo;
-                      return ListTile(
-                        dense: true,
-                        title: Text(c.name),
-                        subtitle: Text('${c.region} · ${c.location}'),
-                        onTap: () => Navigator.pop(context, c),
-                      );
-                    },
-                  ),
-          ),
-        ],
       ),
     );
   }

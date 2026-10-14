@@ -8,7 +8,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
+import '../l10n/app_localizations.dart';
 import 'festivals.dart';
 
 /// 未来一年里的一条节日或节气记录。
@@ -40,7 +42,8 @@ class FestivalItem {
   final int daysLeft;
 
   /// 类型徽章文案。
-  String get badgeLabel => isJieQi ? '节气' : '节日';
+  String badgeLabel(AppLocalizations l10n) =>
+      isJieQi ? l10n.festBadgeJieQi : l10n.festBadgeFestival;
 }
 
 /// 扫描从 [from]（默认今天）起 [days] 天内的所有节日和节气。
@@ -103,20 +106,24 @@ List<FestivalItem> scanFestivals({DateTime? from, int days = 365}) {
 
 /// 卡片上的日期行，两种写法对应两种历法：
 ///
-///  - 农历节日：`二〇二六年九月初九(10.18) 周日`
-///  - 公历节日与节气：`2026年10月23日 周五`
+///  - 农历节日：`农历丙午年九月初九(10.18) 周日`
+///  - 公历节日与节气：`2026年10月23日 周五`（英文界面走 intl 格式）
 ///
 /// 农历那行后面的括号是公历月.日——农历本身不带公历信息，
 /// 光看「九月初九」没法排日程，所以补一个括号。
-String festivalDateLabel(DayInfo info, bool isLunar) {
-  if (!isLunar) {
-    final d = info.date;
-    return '${d.year}年${d.month}月${d.day}日 ${info.weekShortText}';
-  }
+String festivalDateLabel(
+    BuildContext context, DayInfo info, bool isLunar) {
+  final l10n = AppLocalizations.of(context)!;
+  final loc = Localizations.localeOf(context).toString();
   final d = info.date;
+  // 短星期（中文「周五」/英文「Fri」）交给 intl 按 locale 出。
+  final week = DateFormat.E(loc).format(d);
+  if (!isLunar) {
+    return '${DateFormat.yMMMd(loc).format(d)} $week';
+  }
   final lunar = info.lunar;
-  return '农历${lunar.getYearInChinese()}年${lunar.getMonthInChinese()}'
-      '${lunar.getDayInChinese()}(${d.month}.${d.day}) ${info.weekShortText}';
+  return '${l10n.calcLunar}${lunar.getYearInChinese()}年${lunar.getMonthInChinese()}'
+      '${lunar.getDayInChinese()}(${d.month}.${d.day}) $week';
 }
 
 /// 从 [from] 起找下一个节日或节气，找到立即返回；40 天内都没有则返回 null。

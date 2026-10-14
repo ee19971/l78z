@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import 'festival_prefs.dart';
 import 'festival_scan.dart';
 import 'festival_settings_page.dart';
@@ -80,7 +81,7 @@ class _FestivalsPageState extends State<FestivalsPage> {
 
   /// 日期行：按来源选写法，需要拿当天的 [DayInfo]。
   String _dateLabel(FestivalItem item) =>
-      festivalDateLabel(DayInfo.of(item.date), item.isLunar);
+      festivalDateLabel(context, DayInfo.of(item.date), item.isLunar);
 
   Widget _card(FestivalItem item, int index) {
     final theme = Theme.of(context);
@@ -136,7 +137,7 @@ class _FestivalsPageState extends State<FestivalsPage> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      item.badgeLabel,
+                      item.badgeLabel(AppLocalizations.of(context)!),
                       style: theme.textTheme.labelSmall,
                     ),
                   ),
@@ -157,9 +158,10 @@ class _FestivalsPageState extends State<FestivalsPage> {
   /// 而这天其实就是今天。
   Widget _daysLeft(int days) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     if (days == 0) {
       return Text(
-        '今天',
+        l10n.commonToday,
         style: theme.textTheme.titleLarge
             ?.copyWith(fontWeight: FontWeight.bold),
       );
@@ -168,7 +170,7 @@ class _FestivalsPageState extends State<FestivalsPage> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text('还有', style: theme.textTheme.labelSmall),
+        Text(l10n.festRemain, style: theme.textTheme.labelSmall),
         Text(
           '$days',
           style: theme.textTheme.headlineMedium?.copyWith(
@@ -176,7 +178,7 @@ class _FestivalsPageState extends State<FestivalsPage> {
             height: 1.1,
           ),
         ),
-        Text('天', style: theme.textTheme.labelSmall),
+        Text(l10n.commonDayUnit, style: theme.textTheme.labelSmall),
       ],
     );
   }
@@ -194,6 +196,7 @@ class _FestivalsPageState extends State<FestivalsPage> {
 
     if (items.isEmpty) {
       final theme = Theme.of(context);
+      final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -202,15 +205,15 @@ class _FestivalsPageState extends State<FestivalsPage> {
             const SizedBox(height: 12),
             Text(
               _query?.trim().isNotEmpty ?? false
-                  ? '没有叫「$_query」的节日或节气'
-                  : '未来一年没有可显示的节日节气',
+                  ? l10n.festNoMatch(_query!.trim())
+                  : l10n.festEmpty,
               style: theme.textTheme.bodyMedium,
             ),
             if (FestivalPrefs.hidden.isNotEmpty &&
                 !(_query?.trim().isNotEmpty ?? false)) ...[
               const SizedBox(height: 8),
               Text(
-                '有 ${FestivalPrefs.hidden.length} 个被隐藏了，可到设置里恢复',
+                l10n.festHiddenNotice(FestivalPrefs.hidden.length),
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -228,13 +231,14 @@ class _FestivalsPageState extends State<FestivalsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('节日节气'),
+        title: Text(l10n.festTitle),
         actions: [
           IconButton(
             icon: Icon(_query == null ? Icons.search : Icons.close),
-            tooltip: _query == null ? '搜索' : '关闭搜索',
+            tooltip: _query == null ? l10n.festSearch : l10n.festCloseSearch,
             onPressed: () {
               setState(() {
                 if (_query == null) {
@@ -248,7 +252,7 @@ class _FestivalsPageState extends State<FestivalsPage> {
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            tooltip: '设置',
+            tooltip: l10n.toolsSettings,
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -271,7 +275,7 @@ class _FestivalsPageState extends State<FestivalsPage> {
                 autofocus: true,
                 decoration: InputDecoration(
                   isDense: true,
-                  hintText: '搜索节日或节气',
+                  hintText: l10n.festSearchHint,
                   prefixIcon: const Icon(Icons.search, size: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

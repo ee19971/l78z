@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../l10n/app_localizations.dart';
 import 'festivals.dart';
 
 /// 日期计算页：日期推算 / 日期间隔 / 时间推算。
@@ -57,11 +58,15 @@ class _DateCalcPageState extends State<DateCalcPage>
   /// 哪天，只是想看看农历是什么」。
   String _dateLabel(DateTime date, {required bool lunar}) {
     final info = DayInfo.of(date);
+    final loc = Localizations.localeOf(context).toString();
     if (!lunar) {
-      return '${date.year}年${date.month}月${date.day}日 ${info.weekText}';
+      return '${DateFormat.yMMMd(loc).format(date)} '
+          '${DateFormat.EEEE(loc).format(date)}';
     }
+    // 农历数据本身是中文，只有前缀标签跟随界面语言。
     final l = info.lunar;
-    return '农历${l.getYearInChinese()}年${l.getMonthInChinese()}'
+    return '${AppLocalizations.of(context)!.calcLunar}'
+        '${l.getYearInChinese()}年${l.getMonthInChinese()}'
         '${l.getDayInChinese()} ${info.weekText}';
   }
 
@@ -90,6 +95,7 @@ class _DateCalcPageState extends State<DateCalcPage>
   }
 
   Widget _buildDatePush() {
+    final l10n = AppLocalizations.of(context)!;
     final target = _pushedDate;
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -104,13 +110,14 @@ class _DateCalcPageState extends State<DateCalcPage>
           onTap: _pickBaseDate,
         ),
         _inputRow(
-          label: '相差的日子',
-          unit: '天',
+          label: l10n.calcDaysLabel,
+          unit: l10n.calcUnitDays,
           controller: _daysCtrl,
-          hint: '可为负数',
+          hint: l10n.calcHintNegative,
         ),
         const Divider(height: 32),
-        if (target != null) _resultCard('推算结果', _dateLabel(target, lunar: false)),
+        if (target != null)
+          _resultCard(l10n.calcResult, _dateLabel(target, lunar: false)),
       ],
     );
   }
@@ -145,6 +152,7 @@ class _DateCalcPageState extends State<DateCalcPage>
   }
 
   Widget _buildDateInterval() {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -163,14 +171,14 @@ class _DateCalcPageState extends State<DateCalcPage>
           onTap: () => _pickDate(isStart: false),
         ),
         const Divider(height: 32),
-        _resultCard('相差的日子', '${_intervalDays.abs()} 天'),
+        _resultCard(l10n.calcDaysLabel, l10n.calcNDays(_intervalDays.abs())),
         if (_intervalDays != 0)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               _intervalDays > 0
-                  ? '终点比起点晚 $_intervalDays 天'
-                  : '终点比起点早 ${-_intervalDays} 天',
+                  ? l10n.calcLater(_intervalDays)
+                  : l10n.calcEarlier(-_intervalDays),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -218,6 +226,7 @@ class _DateCalcPageState extends State<DateCalcPage>
   }
 
   Widget _buildTimePush() {
+    final l10n = AppLocalizations.of(context)!;
     final target = _pushedTime;
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -228,10 +237,17 @@ class _DateCalcPageState extends State<DateCalcPage>
           text: _timeFormat.format(_baseTime),
           onTap: _pickBaseTime,
         ),
-        _inputRow(label: '相差的小时', unit: '时', controller: _hoursCtrl),
-        _inputRow(label: '相差的分钟', unit: '分', controller: _minutesCtrl),
+        _inputRow(
+            label: l10n.calcHoursLabel,
+            unit: l10n.calcUnitHours,
+            controller: _hoursCtrl),
+        _inputRow(
+            label: l10n.calcMinutesLabel,
+            unit: l10n.calcUnitMinutes,
+            controller: _minutesCtrl),
         const Divider(height: 32),
-        if (target != null) _resultCard('推算结果', _timeFormat.format(target)),
+        if (target != null)
+          _resultCard(l10n.calcResult, _timeFormat.format(target)),
       ],
     );
   }
@@ -294,7 +310,8 @@ class _DateCalcPageState extends State<DateCalcPage>
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('农历', style: Theme.of(context).textTheme.bodySmall),
+        Text(AppLocalizations.of(context)!.calcLunar,
+            style: Theme.of(context).textTheme.bodySmall),
         Switch(value: value, onChanged: onChanged),
       ],
     );
@@ -329,15 +346,16 @@ class _DateCalcPageState extends State<DateCalcPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('日期计算'),
+        title: Text(l10n.calcTitle),
         bottom: TabBar(
           controller: _tab,
-          tabs: const [
-            Tab(text: '日期推算'),
-            Tab(text: '日期间隔'),
-            Tab(text: '时间推算'),
+          tabs: [
+            Tab(text: l10n.calcTabProject),
+            Tab(text: l10n.calcTabDiff),
+            Tab(text: l10n.calcTabTime),
           ],
         ),
       ),

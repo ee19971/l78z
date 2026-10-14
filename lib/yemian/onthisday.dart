@@ -9,6 +9,8 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../l10n/app_localizations.dart';
+
 /// 单条条目：年份 + 描述文本。
 class OnThisDayEntry {
   const OnThisDayEntry(this.year, this.text);
@@ -19,8 +21,9 @@ class OnThisDayEntry {
   /// 中文描述。
   final String text;
 
-  /// 年份展示：公元前显示「前221」，公元直接显示年份数字。
-  String get yearLabel => year <= 0 ? '前${-year}' : '$year';
+  /// 年份展示：公元前显示「前221」/「221 BC」，公元直接显示年份数字。
+  String yearLabel(AppLocalizations l10n) =>
+      year <= 0 ? l10n.onBcLabel(-year) : '$year';
 }
 
 /// 某一天的三个分区。

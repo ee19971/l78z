@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../l10n/app_localizations.dart';
 import 'festivals.dart';
 
 /// 视图层级：年 > 月 > 周 > 日
@@ -15,9 +16,7 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  static final DateFormat _monthFormat = DateFormat('yyyy年MM月');
   static final DateFormat _dateFormat = DateFormat('yyyy-MM-dd');
-  static const List<String> _weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
 
   static const List<CalendarView> _viewOrder = [
     CalendarView.year,
@@ -25,12 +24,30 @@ class _CalendarPageState extends State<CalendarPage> {
     CalendarView.week,
     CalendarView.day,
   ];
-  static const Map<CalendarView, String> _viewNames = {
-    CalendarView.year: '年视图',
-    CalendarView.month: '月视图',
-    CalendarView.week: '周视图',
-    CalendarView.day: '日视图',
-  };
+  /// 当前视图名（标题下方的小字）。
+  String _viewName(AppLocalizations l10n) => switch (_view) {
+        CalendarView.year => l10n.calViewYear,
+        CalendarView.month => l10n.calViewMonth,
+        CalendarView.week => l10n.calViewWeek,
+        CalendarView.day => l10n.calViewDay,
+      };
+
+  /// 「上一/下一」后面的单位（年/月/周/日）。
+  String _viewTag(AppLocalizations l10n) => switch (_view) {
+        CalendarView.year => l10n.calUnitYear,
+        CalendarView.month => l10n.calUnitMonth,
+        CalendarView.week => l10n.calUnitWeek,
+        CalendarView.day => l10n.calUnitDay,
+      };
+
+  /// 标题里的月份：中文「2026年10月」，英文走 intl「October 2026」。
+  String _monthTitle(DateTime m) {
+    final loc = Localizations.localeOf(context);
+    if (loc.languageCode == 'zh') {
+      return DateFormat('yyyy年MM月').format(m);
+    }
+    return DateFormat.yMMMM(loc.toString()).format(m);
+  }
 
   // 宽屏断点：平板横屏 / 桌面 / 折叠屏展开后左日历、右详情
   static const double _twoPaneBreakpoint = 600;
@@ -334,9 +351,10 @@ class _CalendarPageState extends State<CalendarPage> {
   // ---------- 头部（月份/年份 + 视图名 + 箭头） ----------
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     final title = switch (_view) {
-      CalendarView.year => '${_focusedMonth.year}年',
-      _ => _monthFormat.format(_focusedMonth),
+      CalendarView.year => l10n.calYearTitle(_focusedMonth.year),
+      _ => _monthTitle(_focusedMonth),
     };
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
@@ -344,7 +362,7 @@ class _CalendarPageState extends State<CalendarPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.chevron_left),
-            tooltip: '上一${_viewTag()}',
+            tooltip: l10n.calPrev(_viewTag(l10n)),
             onPressed: () => _goPrev(),
           ),
           Expanded(
@@ -363,27 +381,20 @@ class _CalendarPageState extends State<CalendarPage> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                Text(_viewNames[_view]!,
+                Text(_viewName(l10n),
                     style: Theme.of(context).textTheme.labelSmall),
               ],
             ),
           ),
           IconButton(
             icon: const Icon(Icons.chevron_right),
-            tooltip: '下一${_viewTag()}',
+            tooltip: l10n.calNext(_viewTag(l10n)),
             onPressed: () => _goNext(),
           ),
         ],
       ),
     );
   }
-
-  String _viewTag() => switch (_view) {
-        CalendarView.year => '年',
-        CalendarView.month => '月',
-        CalendarView.week => '周',
-        CalendarView.day => '日',
-      };
 
   void _goPrev() {
     switch (_view) {
@@ -422,9 +433,11 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Widget _buildWeekDays() {
+    // 表头单字：中文「日一二三四五六」，英文窄首字母「SMTWTFS」。
+    final header = AppLocalizations.of(context)!.calWeekHeader.split('');
     return Row(
       children: [
-        for (final w in _weekLabels)
+        for (final w in header)
           Expanded(
             child: Center(
               child: Text(w,
@@ -472,9 +485,14 @@ class _CalendarPageState extends State<CalendarPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('$month月',
+                Text(
+                    Localizations.localeOf(context).languageCode == 'zh'
+                        ? AppLocalizations.of(context)!.calMonthTitle('$month')
+                        : DateFormat.MMMM(Localizations.localeOf(context)
+                                .toString())
+                            .format(DateTime(_focusedMonth.year, month)),
                     style: Theme.of(context).textTheme.titleSmall),
-                Text('$days天',
+                Text(AppLocalizations.of(context)!.calDaysCount(days),
                     style: Theme.of(context)
                         .textTheme
                         .labelSmall
@@ -611,6 +629,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget _buildDateDetail(DateTime date,
       {bool asPanel = false, bool showDate = true}) {
     final info = DayInfo.of(date);
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -621,16 +640,17 @@ class _CalendarPageState extends State<CalendarPage> {
         Text('${info.weekText} · ${info.lunarDayText}', style: textTheme.bodyMedium),
         const Divider(height: 16),
       ],
-      _detailRow('节日', info.festivalText),
-      _detailRow('节气', info.jieQiText),
+      _detailRow(l10n.calFestival, info.festivalText),
+      _detailRow(l10n.mainJieQi, info.jieQiText),
+      // 农历/干支/生肖是中华文化数据本身，保持中文原样，只有标签跟界面语言。
       _detailRow(
-        '农历',
+        l10n.mainLunar,
         '${info.lunar.getYearInChinese()}年'
         '${info.lunar.getMonthInChinese()}${info.lunarDayText}',
       ),
-      _detailRow('干支', info.ganZhiText),
-      _detailRow('生肖', info.lunar.getYearShengXiao()),
-      _detailRow('距今', _distanceText(date)),
+      _detailRow(l10n.mainGanZhi, info.ganZhiText),
+      _detailRow(l10n.mainZodiac, info.lunar.getYearShengXiao()),
+      _detailRow(l10n.calDistance, _distanceText(date)),
       if (info.hasFestival || info.hasJieQi)
         Padding(
           padding: const EdgeInsets.only(top: 8),
@@ -654,11 +674,12 @@ class _CalendarPageState extends State<CalendarPage> {
 
   /// 某个日期距今天多少天；用日历天差，不看时区和小时。
   String _distanceText(DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
     final a = DateTime(_today.year, _today.month, _today.day);
     final b = DateTime(date.year, date.month, date.day);
     final diff = b.difference(a).inDays;
-    if (diff == 0) return '今天';
-    return diff > 0 ? '还有 $diff 天' : '已过 ${-diff} 天';
+    if (diff == 0) return l10n.commonToday;
+    return diff > 0 ? l10n.mainInDays(diff) : l10n.calPassedDays(-diff);
   }
 
   Widget _detailRow(String label, String value) {

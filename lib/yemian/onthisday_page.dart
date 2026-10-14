@@ -7,7 +7,9 @@
 //Copyright (c) 2026 by ee19971 3180749809@qq.com, All Rights Reserved.
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
+import '../l10n/app_localizations.dart';
 import 'onthisday.dart';
 
 /// 历史上的今天页面。
@@ -29,14 +31,11 @@ class _OnThisDayPageState extends State<OnThisDayPage> {
   /// 全表只解一次，之后所有页面共享（见 loadOnThisDay 的静态缓存）。
   late final Future<Map<String, OnThisDaySection>> _future = loadOnThisDay();
 
-  static const List<String> _weekdays = [
-    '星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日',
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('历史上的今天')),
+      appBar: AppBar(title: Text(l10n.mainOnThisDay)),
       body: FutureBuilder<Map<String, OnThisDaySection>>(
         future: _future,
         builder: (context, snap) {
@@ -47,7 +46,8 @@ class _OnThisDayPageState extends State<OnThisDayPage> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('数据加载失败：${snap.error}', textAlign: TextAlign.center),
+                child: Text(l10n.otdLoadFailed('${snap.error}'),
+                    textAlign: TextAlign.center),
               ),
             );
           }
@@ -57,25 +57,25 @@ class _OnThisDayPageState extends State<OnThisDayPage> {
             children: [
               _HeaderCard(date: _date, section: section),
               ..._group(
-                title: '大事记',
+                title: l10n.otdEvents,
                 icon: Icons.history_edu_outlined,
                 color: const Color(0xFF6366F1), // 靛蓝
                 entries: section?.events ?? const [],
               ),
               ..._group(
-                title: '今天出生',
+                title: l10n.otdBirths,
                 icon: Icons.cake_outlined,
                 color: const Color(0xFFDB2777), // 玫红
                 entries: section?.births ?? const [],
               ),
               ..._group(
-                title: '今天逝世',
+                title: l10n.otdDeaths,
                 icon: Icons.star_border,
                 color: const Color(0xFF64748B), // 灰蓝（肃穆）
                 entries: section?.deaths ?? const [],
               ),
               if (section == null || section.isEmpty)
-                const _EmptyCard(text: '这一天暂无收录的条目'),
+                _EmptyCard(text: l10n.otdEmpty),
             ],
           );
         },
@@ -114,7 +114,7 @@ class _OnThisDayPageState extends State<OnThisDayPage> {
                   ),
                   const Spacer(),
                   Text(
-                    '${entries.length} 条',
+                    AppLocalizations.of(context)!.otdCount(entries.length),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: scheme.onSurfaceVariant,
                           fontFeatures: const [FontFeature.tabularFigures()],
@@ -156,6 +156,8 @@ class _HeaderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final loc = Localizations.localeOf(context).toString();
     final events = section?.events.length ?? 0;
     final births = section?.births.length ?? 0;
     final deaths = section?.deaths.length ?? 0;
@@ -167,15 +169,16 @@ class _HeaderCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${date.month}月${date.day}日 '
-              '${_OnThisDayPageState._weekdays[date.weekday - 1]}',
+              // 月日 + 星期交给 intl 按 locale 格式化。
+              '${DateFormat.MMMd(loc).format(date)} '
+              '${DateFormat.EEEE(loc).format(date)}',
               style: text.titleLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             Text(
               section == null || section!.isEmpty
-                  ? '本日暂无数据'
-                  : '大事 $events · 诞生 $births · 逝世 $deaths',
+                  ? l10n.otdNoData
+                  : l10n.otdSummary(events, births, deaths),
               style: text.bodySmall?.copyWith(
                 color: scheme.onSurfaceVariant,
                 fontFeatures: const [FontFeature.tabularFigures()],
@@ -216,7 +219,7 @@ class _EntryRow extends StatelessWidget {
           SizedBox(
             width: 52,
             child: Text(
-              entry.yearLabel,
+              entry.yearLabel(AppLocalizations.of(context)!),
               style: text.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: color,

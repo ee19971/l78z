@@ -8,6 +8,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:l78z/l10n/app_localizations_en.dart';
+import 'package:l78z/l10n/app_localizations_zh.dart';
 import 'package:l78z/yemian/onthisday.dart';
 
 void main() {
@@ -81,9 +83,12 @@ void main() {
     expect(onThisDayKey(DateTime(2026, 10, 13)), '10-13');
   });
 
-  test('年份展示：公元前带「前」字', () {
-    expect(const OnThisDayEntry(2025, '').yearLabel, '2025');
-    expect(const OnThisDayEntry(-221, '').yearLabel, '前221');
+  test('年份展示：公元前带「前」字 / BC', () {
+    final zh = AppLocalizationsZh();
+    final en = AppLocalizationsEn();
+    expect(const OnThisDayEntry(2025, '').yearLabel(zh), '2025');
+    expect(const OnThisDayEntry(-221, '').yearLabel(zh), '前221');
+    expect(const OnThisDayEntry(-221, '').yearLabel(en), '221 BC');
   });
 
   test('查表：命中返回分区，缺日期返回 null', () {

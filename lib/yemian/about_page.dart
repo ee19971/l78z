@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../l10n/app_localizations.dart';
 import '../src/rust/api/config.dart';
 import 'frb_util.dart';
 
@@ -110,10 +111,11 @@ class _AboutPageState extends State<AboutPage> {
 
   @override
   Widget build(BuildContext context) {
-    final ips = _ips.isEmpty ? '未检测到局域网地址' : _ips.join('  ');
+    final l10n = AppLocalizations.of(context)!;
+    final ips = _ips.isEmpty ? l10n.aboutNoLan : _ips.join('  ');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('关于')),
+      appBar: AppBar(title: Text(l10n.aboutTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -130,7 +132,9 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _version.isEmpty ? '' : '版本 $_version ($_buildNumber)',
+                    _version.isEmpty
+                        ? ''
+                        : l10n.aboutVersion(_version, _buildNumber),
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -141,25 +145,25 @@ class _AboutPageState extends State<AboutPage> {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.error_outline, color: Colors.red),
-                title: const Text('信息读取失败'),
+                title: Text(l10n.aboutLoadFailed),
                 subtitle: Text(_error!),
                 trailing: const Icon(Icons.refresh),
                 onTap: _load,
               ),
             ),
-          _sectionTitle('本机信息'),
+          _sectionTitle(l10n.aboutSectionDevice),
           Card(
             child: Column(
               children: [
                 ListTile(
                   dense: true,
-                  title: const Text('本地 IP'),
+                  title: Text(l10n.aboutLocalIp),
                   subtitle: Text(ips),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   dense: true,
-                  title: const Text('监听端口'),
+                  title: Text(l10n.aboutListenPort),
                   subtitle: Text('$_port'),
                 ),
                 const Divider(height: 1),
@@ -167,14 +171,14 @@ class _AboutPageState extends State<AboutPage> {
                 // 这里先占位，避免显示一个并不存在的值。
                 ListTile(
                   dense: true,
-                  title: const Text('设备指纹'),
-                  subtitle: const Text('启用 LocalSend 兼容后生成，对方据此识别本机身份'),
+                  title: Text(l10n.aboutFingerprint),
+                  subtitle: Text(l10n.aboutFingerprintHint),
                   trailing: const Text('—'),
                 ),
               ],
             ),
           ),
-          _sectionTitle('开源许可'),
+          _sectionTitle(l10n.aboutSectionLicense),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -182,20 +186,16 @@ class _AboutPageState extends State<AboutPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '本项目采用 Apache License 2.0',
+                    l10n.aboutLicenseTitle,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    '允许商业使用、修改与分发。分发本软件的副本时，'
-                    '请保留仓库中的 LICENSE 与 NOTICE 文件。\n\n'
-                    '完整许可文本见项目根目录的 LICENSE 文件。',
-                  ),
+                  Text(l10n.aboutLicenseBody),
                 ],
               ),
             ),
           ),
-          _sectionTitle('第三方组件'),
+          _sectionTitle(l10n.aboutSectionThirdParty),
           Text('Dart / Flutter', style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 4),
           _libList(_dartLibs),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:l78z/l10n/app_localizations.dart';
 import 'package:l78z/yemian/calendar.dart';
 import 'package:l78z/yemian/festivals.dart';
 
@@ -27,7 +28,13 @@ void main() {
 
   testWidgets('底部详情栏展示节日/节气/干支', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: CalendarPage())),
+      MaterialApp(
+        // 文案已走 l10n，测试锁中文环境。
+        locale: const Locale('zh', 'CN'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: CalendarPage()),
+      ),
     );
 
     expect(find.text('节日'), findsOneWidget);

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:l78z/src/rust/frb_generated.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'yemian/app_settings.dart';
 import 'yemian/calendar.dart';
 import 'yemian/countdown_page.dart';
 import 'yemian/date_calc_page.dart';
@@ -19,6 +21,7 @@ Future<void> main() async {
     await RustLib.init();
     // 时区库要在主页面第一帧之前就绪，否则时钟会退化成本机时间。
     initTimezones();
+    await _initAppSettings();
     runApp(const MyApp());
   } catch (e) {
     // 如果初始化失败，运行一个简单的错误页面，方便调试
@@ -34,18 +37,69 @@ Future<void> main() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+/// 启动时读应用设置；顺带做首装时区探测——用户从没选过城市时，
+/// 按系统 locale 国家码（兜底 UTC 偏移）猜一个首都写进 prefs，
+/// 装完第一次打开时钟就是当地时间。
+Future<void> _initAppSettings() async {
+  await AppSettingsModel.instance.load();
+  final sp = await SharedPreferences.getInstance();
+  if (sp.getString(kCityLocation) == null) {
+    await sp.setString(kCityLocation, detectLocalCity().location);
+  }
+}
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // main() 里已经 load 过，这里只在热重载/测试场景兜底一次。
+    if (AppSettingsModel.instance.fontScale == 1.0 &&
+        AppSettingsModel.instance.locale == null) {
+      AppSettingsModel.instance.load();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: const [
-        ...GlobalMaterialLocalizations.delegates,
-        AppLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en'), Locale('zh'), Locale('zh', 'CN')],
-      home: const HomePage(),
+    return ListenableBuilder(
+      listenable: AppSettingsModel.instance,
+      builder: (context, _) {
+        final settings = AppSettingsModel.instance;
+        final family = settings.effectiveFontFamily;
+        return MaterialApp(
+          locale: settings.locale,
+          localizationsDelegates: const [
+            ...GlobalMaterialLocalizations.delegates,
+            AppLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en'), Locale('zh')],
+          // 换字体族时同步给 textTheme 设 fontFamily；生僻字回落系统字体，
+          // 靠 fontFamilyFallback 兜底，避免子集化字体缺字显示豆腐块。
+          theme: family == null
+              ? null
+              : ThemeData(
+                  textTheme: ThemeData().textTheme.apply(
+                        fontFamily: family,
+                        fontFamilyFallback: const ['sans-serif'],
+                      ),
+                ),
+          // 全局字号缩放：设置页拖滑杆即时生效，覆盖所有文本样式。
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(settings.fontScale),
+            ),
+            child: child ?? const SizedBox.shrink(),
+          ),
+          home: const HomePage(),
+        );
+      },
     );
   }
 }
@@ -140,37 +194,37 @@ class _HomePageState extends State<HomePage> {
           NavigationDestination(
             icon: const Icon(Icons.celebration_outlined),
             selectedIcon: const Icon(Icons.celebration),
-            label: '节日节气',
+            label: AppLocalizations.of(context)!.tabFestivals,
           ),
           // 日期计算
           NavigationDestination(
             icon: const Icon(Icons.calculate_outlined),
             selectedIcon: const Icon(Icons.calculate),
-            label: '日期计算',
+            label: AppLocalizations.of(context)!.tabCalculator,
           ),
           // 主页面
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),
             selectedIcon: const Icon(Icons.home),
-            label: '主页面',
+            label: AppLocalizations.of(context)!.tabHome,
           ),
           // 工具
           NavigationDestination(
             icon: const Icon(Icons.handyman_outlined),
             selectedIcon: const Icon(Icons.handyman),
-            label: '工具',
+            label: AppLocalizations.of(context)!.tabTools,
           ),
           // 倒数日
           NavigationDestination(
             icon: const Icon(Icons.hourglass_top_outlined),
             selectedIcon: const Icon(Icons.hourglass_top),
-            label: '倒数日',
+            label: AppLocalizations.of(context)!.tabCountdown,
           ),
           // 日历
           NavigationDestination(
             icon: const Icon(Icons.calendar_month_outlined),
             selectedIcon: const Icon(Icons.calendar_month),
-            label: '日历',
+            label: AppLocalizations.of(context)!.tabCalendar,
           ),
         ],
       ),

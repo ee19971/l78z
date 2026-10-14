@@ -1,16 +1,835 @@
 {
-  "title": "你好",
-  "helloWorld": "你好世界!",
-  "@helloWorld": {
-    "description": "传统的新生儿程序员问候"
-  },
-  "rustDemo": "操作: 调用 Rust `greet(\"Tom\")`\n结果: {greetResult}\n\n1 + 2 = {addResult}",
-  "rustDemo": "操作: 调用 Rust `greet(\"Tom\")`\n结果: {greetResult}\n\n1 + 2 = {addResult}",
-  "@rustDemo": {
-    "description": "Rust 调用演示",
+  "tabFestivals": "Festivals",
+  "tabCalculator": "Date Calc",
+  "tabHome": "Home",
+  "tabTools": "Tools",
+  "tabCountdown": "Countdown",
+  "tabCalendar": "Calendar",
+
+  "appInitFailed": "Init failed: {error}\nPlease check the browser console or whether COOP/COEP headers are missing.",
+  "@appInitFailed": {
     "placeholders": {
-      "greetResult": { "type": "String" },
-      "addResult": { "type": "String" }
+      "error": { "type": "String" }
+    }
+  },
+
+  "pickerSearchHint": "Search country or capital, e.g. Japan, Paris, asia",
+  "pickerNoMatch": "No country or capital matches \"{query}\"",
+  "@pickerNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+
+  "setRegionTitle": "Language & Region",
+  "setDisplayTitle": "Display",
+  "setLanguage": "Language",
+  "setFollowSystem": "Follow system",
+  "setLanguageZh": "简体中文",
+  "setLanguageEn": "English",
+  "setTimeZoneCity": "Time zone city",
+  "setAutoDetect": "Auto detected",
+  "setFont": "Font",
+  "setFontSystem": "System default",
+  "setFontSans": "Noto Sans SC",
+  "setFontSerif": "Noto Serif SC",
+  "setFontSize": "Font size  {percent}%",
+  "@setFontSize": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "setFontPreview": "永 Aa 互传助手 2026 — the quick brown fox",
+
+  "mainTitle": "Home",
+  "mainOcr": "OCR Scan",
+  "mainQrScan": "QR Scan",
+  "mainStopwatch": "Stopwatch",
+  "mainOnThisDay": "Today in History",
+  "mainTzNotReady": "Timezone data not ready",
+  "mainToday": "Today!",
+  "mainTomorrow": "Tomorrow",
+  "mainInDays": "{days} days to go",
+  "@mainInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "mainTodayTitle": "Today",
+  "mainSolar": "Solar",
+  "mainLunar": "Lunar",
+  "mainGanZhi": "Sexagenary",
+  "mainZodiac": "Zodiac",
+  "mainJieQi": "Solar term",
+  "mainNextFestival": "Next: {name}",
+  "@mainNextFestival": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "toolsTitle": "Tools",
+  "toolsScan": "Scan",
+  "toolsScanSub": "Scan codes / decode images / OCR",
+  "toolsQr": "QR / Barcode",
+  "toolsQrSub": "14 formats, with WiFi & business card templates",
+  "toolsLan": "LAN Transfer",
+  "toolsLanSub": "Transfer text & files between phone and PC",
+  "toolsSettings": "Settings",
+  "toolsSettingsSub": "Transfer config, version & licenses",
+
+  "otdLoadFailed": "Failed to load data: {error}",
+  "@otdLoadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "otdEvents": "Events",
+  "otdBirths": "Born today",
+  "otdDeaths": "Died today",
+  "otdCount": "{n} items",
+  "@otdCount": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "otdSummary": "{events} events · {births} born · {deaths} died",
+  "@otdSummary": {
+    "placeholders": {
+      "events": { "type": "int" },
+      "births": { "type": "int" },
+      "deaths": { "type": "int" }
+    }
+  },
+  "otdEmpty": "No entries recorded for this day",
+  "otdNoData": "No data for this date",
+
+  "swTitle": "Stopwatch",
+  "swStart": "Start",
+  "swPause": "Pause",
+  "swResume": "Resume",
+  "swReset": "Reset",
+  "swLap": "Lap",
+  "swHint": "Tap \"Lap\" while running to record laps",
+  "swLapN": "Lap {n}",
+  "@swLapN": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "swTotal": "Total",
+
+  "calcTitle": "Date Calculator",
+  "calcTabProject": "Project",
+  "calcTabDiff": "Difference",
+  "calcTabTime": "Time",
+  "calcDaysLabel": "Days apart",
+  "calcUnitDays": "days",
+  "calcHintNegative": "May be negative",
+  "calcResult": "Result",
+  "calcNDays": "{n} days",
+  "@calcNDays": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "calcLater": "End is {n} days after start",
+  "@calcLater": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "calcEarlier": "End is {n} days before start",
+  "@calcEarlier": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "calcHoursLabel": "Hours apart",
+  "calcUnitHours": "h",
+  "calcMinutesLabel": "Minutes apart",
+  "calcUnitMinutes": "min",
+  "calcLunar": "Lunar",
+
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "commonSave": "Save",
+  "commonEdit": "Edit",
+  "commonRetry": "Retry",
+  "commonRefresh": "Refresh",
+  "commonClose": "Close",
+
+  "cdTitle": "Countdown",
+  "cdAdd": "Add Countdown",
+  "cdEditTitle": "Edit Countdown",
+  "cdOpFailed": "Operation failed: {error}",
+  "@cdOpFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cdSaveFailed": "Save failed: {error}",
+  "@cdSaveFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cdLoadFailed": "Failed to load: {error}",
+  "@cdLoadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "cdDeleteTitle": "Delete \"{title}\"?",
+  "@cdDeleteTitle": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "cdDeleteMsg": "This cannot be undone.",
+  "commonDayUnit": "days",
+  "cdRemain": "Left",
+  "cdPassed": "Passed",
+  "cdHas": "After",
+  "cdUntilNext": "Until next",
+  "cdToday": "Today!",
+  "cdModeCountdown": "Down",
+  "cdModeCountup": "Up",
+  "cdModeYearly": "Yearly",
+  "cdModeCountdownFull": "Countdown: days left until target",
+  "cdModeCountupFull": "Count up: days since target",
+  "cdModeYearlyFull": "Yearly: birthdays, anniversaries",
+  "cdTotal": "{n} countdowns",
+  "@cdTotal": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "cdEmpty": "No countdowns yet",
+  "cdEmptyHint": "Keep the important days here; widgets will watch them for you",
+  "cdPin": "Pin",
+  "cdUnpin": "Unpin",
+  "cdPinHint": "Pinned items appear first and are preferred by widgets",
+  "cdPinSwitchHint": "Appear first in the list; preferred by widgets",
+  "cdFieldTitle": "Title",
+  "cdFieldTitleHint": "e.g. Exam day, wedding anniversary",
+  "cdFieldTarget": "Target date",
+  "cdFieldMode": "Counting mode",
+  "cdFieldColor": "Theme color",
+  "cdFieldNote": "Note (optional)",
+  "cdErrTitleRequired": "Please enter a title",
+  "cdQuote": "\u201c{text}\u201d",
+  "@cdQuote": {
+    "placeholders": {
+      "text": { "type": "String" }
+    }
+  },
+  "cdLifeTitle": "Life Progress",
+  "cdLifeSubtitle": "Set your birthday to show progress here and in widgets",
+  "cdLifeEdit": "Edit",
+  "cdLifePassed": "{pct}% passed",
+  "@cdLifePassed": {
+    "placeholders": {
+      "pct": { "type": "String" }
+    }
+  },
+  "cdLifeLived": "{days} days lived",
+  "@cdLifeLived": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "cdLifeRemaining": "{days} days until age {age}",
+  "@cdLifeRemaining": {
+    "placeholders": {
+      "age": { "type": "int" },
+      "days": { "type": "int" }
+    }
+  },
+  "cdLifeSetupTitle": "Life Progress Setup",
+  "cdBirthday": "Birthday",
+  "cdNotSet": "Not set",
+  "cdLifespanField": "Lifespan (years)",
+  "cdLifespanHelp": "Used to compute total days; change anytime",
+  "cdQuoteField": "Motto (optional)",
+  "cdQuoteHelp": "Shown atop the progress card and widgets",
+  "cdDefaultQuote": "Walk today or run tomorrow.",
+  "cdErrPickBirthday": "Please pick your birthday",
+  "cdErrLifespan": "Lifespan must be a positive integer",
+  "cdClearLife": "Clear life progress",
+
+  "commonToday": "Today",
+
+  "festTitle": "Festivals",
+  "festRemain": "Left",
+  "festNoMatch": "No festival or solar term named \"{query}\"",
+  "@festNoMatch": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "festEmpty": "No festivals or solar terms in the coming year",
+  "festHiddenNotice": "{n} are hidden \u2014 restore them in settings",
+  "@festHiddenNotice": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "festSearch": "Search",
+  "festCloseSearch": "Close search",
+  "festSearchHint": "Search festival or solar term",
+  "festBadgeJieQi": "Solar term",
+  "festBadgeFestival": "Festival",
+  "festColorfulBg": "Colorful backgrounds",
+  "festColorfulBgSub": "Plain cards when off",
+  "festShowEmoji": "Show emoji",
+  "festShowEmojiSub": "Append an emoji after the festival name",
+  "festCoverColor": "Cover color",
+  "festCoverRotate": "Rotate",
+  "festCoverRandom": "Random",
+  "festCoverRotateSub": "Cycle through eight colors in order",
+  "festCoverRandomSub": "Shuffled once a day; stable within the day",
+  "festHiddenTitle": "Hidden festivals",
+  "festHiddenNone": "Nothing is hidden",
+  "festHiddenCount": "{n} hidden",
+  "@festHiddenCount": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "festGroupVisible": "Visible ({n})",
+  "@festGroupVisible": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "festGroupHidden": "Hidden ({n})",
+  "@festGroupHidden": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+
+  "calViewYear": "Year view",
+  "calViewMonth": "Month view",
+  "calViewWeek": "Week view",
+  "calViewDay": "Day view",
+  "calWeekHeader": "SMTWTFS",
+  "calYearTitle": "{year}",
+  "@calYearTitle": {
+    "placeholders": {
+      "year": { "type": "int" }
+    }
+  },
+  "calPrev": "Previous {tag}",
+  "@calPrev": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "calNext": "Next {tag}",
+  "@calNext": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "calUnitYear": "year",
+  "calUnitMonth": "month",
+  "calUnitWeek": "week",
+  "calUnitDay": "day",
+  "calMonthTitle": "{month}",
+  "@calMonthTitle": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "calDaysCount": "{days} days",
+  "@calDaysCount": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "calFestival": "Festival",
+  "calDistance": "From today",
+  "calPassedDays": "{days} days ago",
+  "@calPassedDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "scanTitlePair": "Pair by QR",
+  "scanTitleOcr": "OCR Scan",
+  "scanTitleScan": "Scan",
+  "scanTakePhoto": "Camera",
+  "scanPickGallery": "From album",
+  "scanPickImage": "Pick image",
+  "scanActionOcr": "Recognize text (OCR)",
+  "scanActionBarcode": "Scan QR / barcode",
+  "scanStageRead": "Loading image",
+  "scanStagePrepareModel": "Preparing OCR model (~140MB on first run)",
+  "scanStageRecognizing": "Recognizing text",
+  "scanStageDone": "Recognition done",
+  "scanStageDecoding": "Decoding QR / barcode",
+  "scanStageDecoded": "Decoded",
+  "scanFailed": "Failed at {stage}: {error}",
+  "@scanFailed": {
+    "placeholders": {
+      "stage": { "type": "String" },
+      "error": { "type": "String" }
+    }
+  },
+  "scanNoCode": "No code found \u2014 face the screen, avoid glare, get closer",
+  "scanSavedDevice": "Saved device {name} ({ip})",
+  "@scanSavedDevice": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "ip": { "type": "String" }
+    }
+  },
+  "scanOcrResult": "OCR Result",
+  "scanNoText": "(no text recognized)",
+  "scanDecodeResult": "Decode Result",
+  "scanStagePercent": "{stage} ({percent}%)",
+  "@scanStagePercent": {
+    "placeholders": {
+      "stage": { "type": "String" },
+      "percent": { "type": "int" }
+    }
+  },
+
+  "qrTitle": "Generate QR / Barcode",
+  "qrTemplateTitle": "Content template",
+  "qrPreview": "Preview",
+  "qrGenerate": "Generate",
+  "qrGenerating": "Generating\u2026",
+  "qrNotSet": "Not set",
+  "qrGroupMatrix": "QR / matrix codes",
+  "qrGroupStacked": "Stacked 2D",
+  "qrGroupRetail": "Retail barcodes",
+  "qrGroupIndustrial": "Logistics / industrial",
+  "qrGroupOther": "Other",
+  "qrNameQrCode": "QR code",
+  "qrDim2": "2D",
+  "qrDim1": "1D",
+  "qrHintQrCode": "Any text, URLs, Chinese included",
+  "qrHintDataMatrix": "Any text; tiny, often on small parts",
+  "qrHintAztec": "Any text; common on boarding passes & tickets",
+  "qrHintPdf417": "Any text; holds more, common on ID cards",
+  "qrHintEan13": "12 or 13 digits; last is a check digit",
+  "qrHintEan8": "7 or 8 digits",
+  "qrHintUpcA": "11 or 12 digits",
+  "qrHintUpcE": "7 or 8 digits; first must be 0 or 1",
+  "qrHintCode128": "Any ASCII text; most common on parcels",
+  "qrHintCode39": "0-9 A-Z plus - . $ / + % and space",
+  "qrHintCode93": "Any ASCII text",
+  "qrHintItf": "Even number of digits; common on cartons",
+  "qrHintCodabar": "Digits with A/B/C/D start/stop, e.g. A123456B",
+  "qrHintTelepen": "Any ASCII text; rarely used",
+  "qrTplCustom": "Custom",
+  "qrTplWifi": "WiFi",
+  "qrTplUrl": "URL",
+  "qrTplVcard": "Contact",
+  "qrTplPhone": "Phone",
+  "qrTplSms": "SMS",
+  "qrTplEmail": "Email",
+  "qrTplCalendar": "Calendar",
+  "qrTplGeo": "Location",
+  "qrFormatLabel": "{name} ({dim})",
+  "@qrFormatLabel": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "dim": { "type": "String" }
+    }
+  },
+  "qrContentReq": "Content rules: {hint}",
+  "@qrContentReq": {
+    "placeholders": {
+      "hint": { "type": "String" }
+    }
+  },
+  "qrSelfOnly": "Note: {name} can only be generated here \u2014 the built-in scanner cannot read it; other scanner apps can.",
+  "@qrSelfOnly": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "qrRequirement": "\"{name}\" requires: {hint}",
+  "@qrRequirement": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "hint": { "type": "String" }
+    }
+  },
+  "qrFillField": "Please fill in {label}",
+  "@qrFillField": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "qrFillContent": "Please enter content",
+  "qrNoDigits": "No usable digits in {label}",
+  "@qrNoDigits": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "qrPickStart": "Please pick a start time",
+  "qrGeoNotNumber": "Latitude/longitude must be numbers",
+  "qrFieldContent": "Content",
+  "qrFieldSsid": "Network name (SSID)",
+  "qrFieldPass": "Password",
+  "qrPassHint": "Leave empty when security is None",
+  "qrFieldSecurity": "Security",
+  "qrEncNone": "None",
+  "qrFieldUrl": "URL",
+  "qrUrlHint": "e.g. example.com; https:// is added automatically",
+  "qrFieldName": "Name",
+  "qrFieldMobile": "Mobile",
+  "qrFieldEmail": "Email",
+  "qrFieldOrg": "Organization",
+  "qrFieldJob": "Job title",
+  "qrFieldPhoneNumber": "Phone number",
+  "qrPhoneHint": "Spaces and dashes are removed automatically",
+  "qrFieldSmsTo": "Recipient number",
+  "qrFieldSmsBody": "Message",
+  "qrFieldMailTo": "Recipient email",
+  "qrFieldSubject": "Subject",
+  "qrFieldBody": "Body",
+  "qrFieldCalTitle": "Title",
+  "qrStartTime": "Start time",
+  "qrEndTime": "End time",
+  "qrEndHint": "Defaults to 1 hour after start if left empty",
+  "qrFieldLocation": "Location",
+  "qrFieldLat": "Latitude",
+  "qrFieldLng": "Longitude",
+
+  "lanTitle": "LAN Transfer",
+  "lanReceiver": "Receiver",
+  "lanSender": "Sender",
+  "lanStartServer": "Start server",
+  "lanStopServer": "Stop server",
+  "lanServerKeepAlive": "The server keeps running after you leave this page; peers can still connect",
+  "lanQrHint": "Scan this QR code with another device to pair",
+  "lanUnpaired": "No paired device",
+  "lanPeerInfo": "Target: {name} ({addr})",
+  "@lanPeerInfo": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "addr": { "type": "String" }
+    }
+  },
+  "lanPair": "Pair by QR",
+  "lanTest": "Test",
+  "lanTextContent": "Text content",
+  "lanSendText": "Send text",
+  "lanSendFile": "Send file",
+  "lanLogTitle": "Log",
+  "lanLsTitle": "LocalSend devices",
+  "lanLsOff": "Compat layer not running",
+  "lanLsPortInfo": "Port {port}; interoperates with official LocalSend",
+  "@lanLsPortInfo": {
+    "placeholders": {
+      "port": { "type": "int" }
+    }
+  },
+  "lanLsNotice": "Note: {error}",
+  "@lanLsNotice": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanNoDevice": "No devices found. Make sure both devices are on the same network and wait a few seconds",
+  "lanSendToAlias": "Send file to {alias}",
+  "@lanSendToAlias": {
+    "placeholders": {
+      "alias": { "type": "String" }
+    }
+  },
+  "lanSendFailed": "Send failed: {error}",
+  "@lanSendFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanSnackSent": "Sent {name}",
+  "@lanSnackSent": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "lanLogLsDisabled": "LocalSend compat layer disabled in settings",
+  "lanLogLsStarted": "LocalSend compat layer started on port {port}; official LocalSend can discover this device",
+  "@lanLogLsStarted": {
+    "placeholders": {
+      "port": { "type": "int" }
+    }
+  },
+  "lanLogLsStartedNoMcast": "LocalSend compat layer started (port {port}) but multicast is unavailable: {reason}; only active scans can find this device",
+  "@lanLogLsStartedNoMcast": {
+    "placeholders": {
+      "port": { "type": "int" },
+      "reason": { "type": "String" }
+    }
+  },
+  "lanLogLsStartFailed": "Failed to start LocalSend compat layer: {error}",
+  "@lanLogLsStartFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanMcastUnavailable": "multicast unavailable",
+  "lanUnknown": "unknown reason",
+  "lanLogLsDiscovered": "Discovered LocalSend device: {alias} ({addr})",
+  "@lanLogLsDiscovered": {
+    "placeholders": {
+      "alias": { "type": "String" },
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogLsRegistered": "{alias} registered to this device via LocalSend ({ip})",
+  "@lanLogLsRegistered": {
+    "placeholders": {
+      "alias": { "type": "String" },
+      "ip": { "type": "String" }
+    }
+  },
+  "lanLogLsIncoming": "{alias} wants to push {n} files ({ip}, {size} total)",
+  "@lanLogLsIncoming": {
+    "placeholders": {
+      "alias": { "type": "String" },
+      "n": { "type": "int" },
+      "ip": { "type": "String" },
+      "size": { "type": "String" }
+    }
+  },
+  "lanLogLsReceived": "LocalSend received file: {name}",
+  "@lanLogLsReceived": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "lanLogLsRecvFailed": "LocalSend failed to receive {name}: {error}",
+  "@lanLogLsRecvFailed": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogLsSessionEnd": "LocalSend session ended: {ok} ok, {fail} failed",
+  "@lanLogLsSessionEnd": {
+    "placeholders": {
+      "ok": { "type": "int" },
+      "fail": { "type": "int" }
+    }
+  },
+  "lanLogLsError": "LocalSend: {message}",
+  "@lanLogLsError": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "lanLogTextReceived": "Received text [{kind}] from {from}:\n{text}",
+  "@lanLogTextReceived": {
+    "placeholders": {
+      "kind": { "type": "String" },
+      "from": { "type": "String" },
+      "text": { "type": "String" }
+    }
+  },
+  "lanLogReverseRegistered": "✓ {name} registered back; you can now send both ways\n{addr}",
+  "@lanLogReverseRegistered": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogServerStarted": "Server started: {addr}",
+  "@lanLogServerStarted": {
+    "placeholders": {
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogServerPort": "Server started on port {port}",
+  "@lanLogServerPort": {
+    "placeholders": {
+      "port": { "type": "int" }
+    }
+  },
+  "lanLogServerAlts": "Alternate addresses: {list}",
+  "@lanLogServerAlts": {
+    "placeholders": {
+      "list": { "type": "String" }
+    }
+  },
+  "lanLogServerStopped": "Server stopped",
+  "lanLogStartFailed": "Failed to start: {error}",
+  "@lanLogStartFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogSavedDownloads": "\nSaved to the system Downloads folder",
+  "lanLogSaveFailed": "\n⚠ Failed to save to Downloads ({error}); the file stays in app-private storage",
+  "@lanLogSaveFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogFileReceived": "Received {name} ({size}) from {from}\nSaved: {path}{note}",
+  "@lanLogFileReceived": {
+    "placeholders": {
+      "from": { "type": "String" },
+      "name": { "type": "String" },
+      "size": { "type": "String" },
+      "path": { "type": "String" },
+      "note": { "type": "String" }
+    }
+  },
+  "lanLogTestFailed": "Connection test error: {error}",
+  "@lanLogTestFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogPeerUnreachable": "⚠ Cannot reach {name} (tried {ips}).\nMake sure both devices are on the same Wi-Fi/LAN and the peer's receive server is running",
+  "@lanLogPeerUnreachable": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "ips": { "type": "String" }
+    }
+  },
+  "lanLogConnOk": "✓ Connected {addr}",
+  "@lanLogConnOk": {
+    "placeholders": {
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogConnOkAlt": "✓ Connected via reachable address {addr} (preferred {preferred} from the QR is unreachable)",
+  "@lanLogConnOkAlt": {
+    "placeholders": {
+      "addr": { "type": "String" },
+      "preferred": { "type": "String" }
+    }
+  },
+  "lanLogNeedServer": "⚠ This device's receive server is not running, so {name} cannot send to it.\nTap \"Start server\" above and ask the peer to scan your QR code again",
+  "@lanLogNeedServer": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "lanLogToldPeer": "✓ Told {name} this device's address; both sides can now send",
+  "@lanLogToldPeer": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "lanLogReverseFailed": "⚠ Could not register back to {name}: {error}",
+  "@lanLogReverseFailed": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogPaired": "Paired device: {name} ({addr})",
+  "@lanLogPaired": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "addr": { "type": "String" }
+    }
+  },
+  "lanLogTextSent": "Sent text to {name}",
+  "@lanLogTextSent": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "lanLogSendTextFailed": "⚠ Failed to send text: {error}",
+  "@lanLogSendTextFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogFileSent": "Sent file {name} to {to}",
+  "@lanLogFileSent": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+  "lanLogSendFileFailed": "⚠ Failed to send file: {error}",
+  "@lanLogSendFileFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "lanLogLsSent": "Sent {name} to {alias} via LocalSend",
+  "@lanLogLsSent": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "alias": { "type": "String" }
+    }
+  },
+  "lanLogLsSendFailed": "LocalSend send failed: {error}",
+  "@lanLogLsSendFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "aboutTitle": "About",
+  "aboutNoLan": "No LAN address detected",
+  "aboutVersion": "Version {version} ({build})",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": { "type": "String" },
+      "build": { "type": "String" }
+    }
+  },
+  "aboutLoadFailed": "Failed to read device info",
+  "aboutSectionDevice": "This device",
+  "aboutLocalIp": "Local IP",
+  "aboutListenPort": "Listen port",
+  "aboutFingerprint": "Device fingerprint",
+  "aboutFingerprintHint": "Created when the LocalSend compat layer is on; peers use it to identify this device",
+  "aboutSectionLicense": "License",
+  "aboutLicenseTitle": "This project is licensed under the Apache License 2.0",
+  "aboutLicenseBody": "Commercial use, modification and distribution are allowed.\nWhen redistributing copies, keep the LICENSE and NOTICE files of the repository.\n\nThe full license text is in the LICENSE file at the project root.",
+  "aboutSectionThirdParty": "Third-party components",
+
+  "commonSaved": "Saved",
+  "commonSaveFailed": "Save failed: {error}",
+  "@commonSaveFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "setConfigLoadFailed": "Failed to load config",
+  "setSectionTransfer": "Transfer",
+  "setDeviceName": "Device name",
+  "setDeviceNameHelp": "Shown in the peer's device list",
+  "setPortLabel": "Listen port",
+  "setPortHelp": "Default {port}. Falls back to another port when occupied; transfers are unaffected",
+  "@setPortHelp": {
+    "placeholders": {
+      "port": { "type": "int" }
+    }
+  },
+  "setPinLabel": "Transfer PIN (optional)",
+  "setPinHelp": "Leave empty to skip verification. When set, peers must enter it to push files",
+  "setVerifyHash": "Verify file hashes",
+  "setVerifyHashSub": "Compare received files against the sender's SHA-256",
+  "setLsCompat": "Enable LocalSend compatibility",
+  "setLsCompatSub": "Auto-discover official LocalSend on the same network: no QR code needed",
+  "setSectionAbout": "About",
+  "setAboutTitle": "About 互传助手",
+  "setAboutSub": "Version, license and third-party components",
+
+  "onBcLabel": "{year} BC",
+  "@onBcLabel": {
+    "placeholders": {
+      "year": { "type": "int" }
     }
   }
 }

@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import 'festival_prefs.dart';
 import 'festival_scan.dart';
 
@@ -29,13 +30,14 @@ class _FestivalSettingsPageState extends State<FestivalSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('节日节气')),
+      appBar: AppBar(title: Text(l10n.festTitle)),
       body: ListView(
         children: [
           SwitchListTile(
-            title: const Text('显示彩色背景'),
-            subtitle: const Text('关闭后卡片改为素色'),
+            title: Text(l10n.festColorfulBg),
+            subtitle: Text(l10n.festColorfulBgSub),
             value: FestivalPrefs.showCover,
             onChanged: (v) async {
               await FestivalPrefs.setShowCover(v);
@@ -43,8 +45,8 @@ class _FestivalSettingsPageState extends State<FestivalSettingsPage> {
             },
           ),
           SwitchListTile(
-            title: const Text('显示表情'),
-            subtitle: const Text('在节日名称后追加一个 emoji'),
+            title: Text(l10n.festShowEmoji),
+            subtitle: Text(l10n.festShowEmojiSub),
             value: FestivalPrefs.showEmoji,
             onChanged: (v) async {
               await FestivalPrefs.setShowEmoji(v);
@@ -52,28 +54,29 @@ class _FestivalSettingsPageState extends State<FestivalSettingsPage> {
             },
           ),
           ListTile(
-            title: const Text('封面颜色'),
-            trailing: Text(FestivalPrefs.randomCover ? '随机' : '轮换'),
+            title: Text(l10n.festCoverColor),
+            trailing: Text(
+                FestivalPrefs.randomCover ? l10n.festCoverRandom : l10n.festCoverRotate),
             onTap: () async {
               final picked = await showDialog<String>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('封面颜色'),
+                  title: Text(l10n.festCoverColor),
                   content: RadioGroup<String>(
                     groupValue: FestivalPrefs.coverColor,
                     onChanged: (v) => Navigator.pop(ctx, v),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         RadioListTile<String>(
                           value: 'order',
-                          title: Text('轮换'),
-                          subtitle: Text('按列表顺序在八种颜色里循环'),
+                          title: Text(l10n.festCoverRotate),
+                          subtitle: Text(l10n.festCoverRotateSub),
                         ),
                         RadioListTile<String>(
                           value: 'random',
-                          title: Text('随机'),
-                          subtitle: Text('每天打乱一次，同一天内保持不变'),
+                          title: Text(l10n.festCoverRandom),
+                          subtitle: Text(l10n.festCoverRandomSub),
                         ),
                       ],
                     ),
@@ -89,11 +92,11 @@ class _FestivalSettingsPageState extends State<FestivalSettingsPage> {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.visibility_off_outlined),
-            title: const Text('隐藏的节日'),
+            title: Text(l10n.festHiddenTitle),
             subtitle: Text(
               FestivalPrefs.hidden.isEmpty
-                  ? '当前没有隐藏任何节日'
-                  : '已隐藏 ${FestivalPrefs.hidden.length} 项',
+                  ? l10n.festHiddenNone
+                  : l10n.festHiddenCount(FestivalPrefs.hidden.length),
               style: theme.textTheme.bodySmall,
             ),
             trailing: const Icon(Icons.chevron_right),
@@ -147,6 +150,7 @@ class _FestivalHiddenPageState extends State<FestivalHiddenPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final visible = _names
         .where((n) => !FestivalPrefs.hidden.contains(n))
         .toList(growable: false);
@@ -155,11 +159,11 @@ class _FestivalHiddenPageState extends State<FestivalHiddenPage> {
         .toList(growable: false);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('隐藏的节日')),
+      appBar: AppBar(title: Text(l10n.festHiddenTitle)),
       body: ListView(
         children: [
-          _groupHeader('可显示（${visible.length}）', visible),
-          _groupHeader('已隐藏（${hidden.length}）', hidden),
+          _groupHeader(l10n.festGroupVisible(visible.length), visible),
+          _groupHeader(l10n.festGroupHidden(hidden.length), hidden),
           const SizedBox(height: 24),
         ],
       ),

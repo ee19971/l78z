@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../src/rust/api/ocr.dart';
 import '../src/rust/api/qr.dart';
 import '../src/rust/api/transfer.dart';
@@ -180,6 +181,7 @@ class _ScanPageState extends State<ScanPage> {
 
   /// 把解码结果当作设备配对信息处理；若已直接结束本页则返回 true。
   Future<bool> _applyPayloads(List<DecodedCode> codes) async {
+    final l10n = AppLocalizations.of(context)!;
     for (final c in codes) {
       final info = await parseConnectInfo(text: c.payload);
       if (info == null) continue;
@@ -188,7 +190,7 @@ class _ScanPageState extends State<ScanPage> {
         return true;
       }
       PairedDevice.value = info;
-      await _snack('已保存设备 ${info.name} (${info.ip})');
+      await _snack(l10n.scanSavedDevice(info.name, info.ip));
     }
     return false;
   }
@@ -196,11 +198,13 @@ class _ScanPageState extends State<ScanPage> {
   Future<void> _run(ScanMode mode) async {
     final path = _imagePath;
     if (path == null || _busy) return;
+    // stage 文案在多次 setState 之间复用，取一次 l10n 备着。
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _busy = true;
       _progress = 0;
-      _stage = '读取图片';
+      _stage = l10n.scanStageRead;
       _ocrText = null;
       _results.clear();
     });
@@ -213,7 +217,7 @@ class _ScanPageState extends State<ScanPage> {
         // OCR 只认文字，不再顺手跑一遍二维码解码——
         // 普通照片上没有码，那一步必然报错，把真正的 OCR 挡在了外面。
         setState(() {
-          _stage = '准备 OCR 模型（首次约 140MB）';
+          _stage = l10n.scanStagePrepareModel;
           _progress = 0.05;
         });
         final modelDir = await ensureOcrModelDir(onProgress: (p) {
@@ -221,7 +225,7 @@ class _ScanPageState extends State<ScanPage> {
         });
         if (!mounted) return;
         setState(() {
-          _stage = '正在识别文字';
+          _stage = l10n.scanStageRecognizing;
           _progress = 0.55;
         });
         final text = await ocrImageText(
@@ -234,11 +238,11 @@ class _ScanPageState extends State<ScanPage> {
         setState(() {
           _ocrText = text;
           _progress = 1.0;
-          _stage = '识别完成';
+          _stage = l10n.scanStageDone;
         });
       } else {
         setState(() {
-          _stage = '正在解码二维码/条形码';
+          _stage = l10n.scanStageDecoding;
           _progress = 0.5;
         });
         List<DecodedCode> codes;
@@ -259,16 +263,16 @@ class _ScanPageState extends State<ScanPage> {
         setState(() {
           _results.addAll(unique);
           _progress = 1.0;
-          _stage = '解码完成';
+          _stage = l10n.scanStageDecoded;
         });
         if (unique.isEmpty) {
-          await _snack('没识别出码——试试正对屏幕、避开反光、靠近一点');
+          await _snack(l10n.scanNoCode);
           return;
         }
         if (await _applyPayloads(unique)) return;
       }
     } catch (e) {
-      await _snack('识别失败 · $_stage：$e');
+      await _snack(l10n.scanFailed(_stage, '$e'));
     } finally {
       if (mounted) {
         setState(() {
@@ -307,10 +311,10 @@ class _ScanPageState extends State<ScanPage> {
       appBar: AppBar(
         title: Text(
           widget.pairingMode
-              ? '扫码配对'
+              ? AppLocalizations.of(context)!.scanTitlePair
               : widget.initialMode == ScanMode.ocr
-                  ? 'OCR 识别'
-                  : '扫一扫',
+                  ? AppLocalizations.of(context)!.scanTitleOcr
+                  : AppLocalizations.of(context)!.scanTitleScan,
         ),
       ),
       body: ListView(
@@ -324,7 +328,7 @@ class _ScanPageState extends State<ScanPage> {
                 Expanded(
                   child: FilledButton.icon(
                     icon: const Icon(Icons.photo_camera),
-                    label: const Text('拍照'),
+                    label: Text(AppLocalizations.of(context)!.scanTakePhoto),
                     onPressed: _busy ? null : _capture,
                   ),
                 ),
@@ -333,7 +337,9 @@ class _ScanPageState extends State<ScanPage> {
               Expanded(
                 child: FilledButton.tonalIcon(
                   icon: const Icon(Icons.image),
-                  label: Text(Platform.isAndroid ? '相册选图' : '选图'),
+                  label: Text(Platform.isAndroid
+                      ? AppLocalizations.of(context)!.scanPickGallery
+                      : AppLocalizations.of(context)!.scanPickImage),
                   onPressed: _busy ? null : _pick,
                 ),
               ),
@@ -350,7 +356,8 @@ class _ScanPageState extends State<ScanPage> {
                 Expanded(
                   child: FilledButton.icon(
                     icon: const Icon(Icons.document_scanner),
-                    label: const Text('识别文字 OCR'),
+                    label:
+                        Text(AppLocalizations.of(context)!.scanActionOcr),
                     onPressed: () => _run(ScanMode.ocr),
                   ),
                 ),
@@ -358,7 +365,8 @@ class _ScanPageState extends State<ScanPage> {
                 Expanded(
                   child: FilledButton.tonalIcon(
                     icon: const Icon(Icons.qr_code_scanner),
-                    label: const Text('扫二维码/条形码'),
+                    label:
+                        Text(AppLocalizations.of(context)!.scanActionBarcode),
                     onPressed: () => _run(ScanMode.barcode),
                   ),
                 ),
@@ -374,19 +382,24 @@ class _ScanPageState extends State<ScanPage> {
               child: Text(
                 _progress == null || _stage.isEmpty
                     ? _stage
-                    : '$_stage（${(_progress! * 100).round()}%）',
+                    : AppLocalizations.of(context)!
+                        .scanStagePercent(_stage, (_progress! * 100).round()),
               ),
             ),
           ],
           if (_ocrText != null) ...[
             const SizedBox(height: 16),
-            Text('OCR 结果', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context)!.scanOcrResult,
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            SelectableText(_ocrText!.isEmpty ? '（未识别到文字）' : _ocrText!),
+            SelectableText(_ocrText!.isEmpty
+                ? AppLocalizations.of(context)!.scanNoText
+                : _ocrText!),
           ],
           if (_results.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text('解码结果', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context)!.scanDecodeResult,
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             ..._results.map(
               (c) => Card(

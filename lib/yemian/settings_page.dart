@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/app_localizations.dart';
 import '../src/rust/api/config.dart';
 import 'about_page.dart';
+import 'app_settings.dart';
+import 'city_picker.dart';
 import 'frb_util.dart';
+import 'timezone_data.dart';
 
 /// LocalSend 兼容层的默认端口，与官方 LocalSend 保持一致，便于互发现。
 const int kLocalSendPort = 53317;
@@ -27,6 +32,12 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _verifyChecksums = true;
   bool _lsCompatEnabled = false;
 
+  // 显示与地区：直接读单例内存值（main() 里已 load），改动也走单例，
+  // MaterialApp 靠 notifyListeners 即时重建，这里只是同步显示状态。
+  String? _cityName;
+  late double _fontScale;
+  late String _fontFamily;
+
   final _deviceNameController = TextEditingController();
   final _portController = TextEditingController();
   final _pinController = TextEditingController();
@@ -35,6 +46,20 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     _load();
+    _loadDisplay();
+  }
+
+  Future<void> _loadDisplay() async {
+    // 兜底再 load 一次：测试环境不跑 main()，单例可能还没读过 prefs。
+    await AppSettingsModel.instance.load();
+    if (!mounted) return;
+    final sp = await SharedPreferences.getInstance();
+    final loc = sp.getString(kCityLocation);
+    setState(() {
+      _fontScale = AppSettingsModel.instance.fontScale;
+      _fontFamily = AppSettingsModel.instance.fontFamily;
+      _cityName = loc == null ? null : cityByLocation(loc).name;
+    });
   }
 
   @override
@@ -91,12 +116,12 @@ class _SettingsPageState extends State<SettingsPage> {
         _portController.text = saved.port.toString();
         _pinController.text = saved.pin ?? '';
       });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('已保存')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.commonSaved)));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('保存失败: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.commonSaveFailed('$e'))));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -108,12 +133,154 @@ class _SettingsPageState extends State<SettingsPage> {
         border: const OutlineInputBorder(),
       );
 
+  // -------------------------------------------------------------------------
+  // 语言与地区 / 显示
+  // -------------------------------------------------------------------------
+
+  /// 当前语言的显示名；null 表示跟随系统。
+  static String _localeLabel(AppLocalizations l10n, Locale? locale) {
+    if (locale == null) return l10n.setFollowSystem;
+    if (locale.countryCode == 'CN') return l10n.setLanguageZh;
+    return l10n.setLanguageEn;
+  }
+
+  static String _fontFamilyLabel(AppLocalizations l10n, String family) =>
+      switch (family) {
+        kFontFamilySans => l10n.setFontSans,
+        kFontFamilySerif => l10n.setFontSerif,
+        _ => l10n.setFontSystem,
+      };
+
+  /// 语言三选。pop 值用哨兵字符串区分「跟随系统」与「取消」：
+  /// 两者返回值都是 null，光看返回值分不出来。
+  Future<void> _pickLocale() async {
+    final l10n = AppLocalizations.of(context)!;
+    final cur = AppSettingsModel.instance.locale;
+    final isZh = cur?.countryCode == 'CN';
+    final isEn = cur?.languageCode == 'en';
+    final picked = await showDialog<Object>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(l10n.setLanguage),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 'system'),
+            child: Row(children: [
+              if (cur == null) const Icon(Icons.check, size: 18),
+              const SizedBox(width: 8),
+              Text(l10n.setFollowSystem),
+            ]),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, const Locale('zh', 'CN')),
+            child: Row(children: [
+              if (isZh) const Icon(Icons.check, size: 18),
+              const SizedBox(width: 8),
+              Text(l10n.setLanguageZh),
+            ]),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, const Locale('en')),
+            child: Row(children: [
+              if (isEn) const Icon(Icons.check, size: 18),
+              const SizedBox(width: 8),
+              Text(l10n.setLanguageEn),
+            ]),
+          ),
+        ],
+      ),
+    );
+    if (picked == null) return; // 取消
+    await AppSettingsModel.instance
+        .setLocale(picked is Locale ? picked : null);
+    if (mounted) setState(() {});
+  }
+
+  /// 时区城市：复用主页面的 73 首都弹层，选中写同一份 prefs。
+  Future<void> _pickCity() async {
+    final city = await showCityPickerSheet(context);
+    if (city == null) return;
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString(kCityLocation, city.location);
+    if (mounted) setState(() => _cityName = city.name);
+  }
+
+  /// 字体族三选，每项带同字体渲染的预览文字。
+  Future<void> _pickFontFamily() async {
+    final l10n = AppLocalizations.of(context)!;
+    final picked = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(l10n.setFont),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, 'system'),
+            child: _fontOptionContent(
+              l10n,
+              _fontFamily == 'system',
+              l10n.setFontSystem,
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, kFontFamilySans),
+            child: _fontOptionContent(
+              l10n,
+              _fontFamily == kFontFamilySans,
+              l10n.setFontSans,
+              family: kFontFamilySans,
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, kFontFamilySerif),
+            child: _fontOptionContent(
+              l10n,
+              _fontFamily == kFontFamilySerif,
+              l10n.setFontSerif,
+              family: kFontFamilySerif,
+            ),
+          ),
+        ],
+      ),
+    );
+    if (picked == null) return; // 取消
+    await AppSettingsModel.instance.setFontFamily(picked);
+    if (mounted) setState(() => _fontFamily = picked);
+  }
+
+  /// 字体选项内容：勾选 + 名称 + 同字体渲染的预览文字。
+  Widget _fontOptionContent(
+    AppLocalizations l10n,
+    bool active,
+    String label, {
+    String? family,
+  }) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            if (active) const Icon(Icons.check, size: 18),
+            const SizedBox(width: 8),
+            Text(label),
+          ]),
+          const SizedBox(height: 4),
+          Text(
+            l10n.setFontPreview,
+            style: TextStyle(
+              fontSize: 13,
+              fontFamily: family,
+              fontFamilyFallback: const ['sans-serif'],
+            ),
+          ),
+        ],
+      );
+
   @override
   Widget build(BuildContext context) {
     final cfg = _cfg;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('设置')),
+      appBar: AppBar(title: Text(l10n.toolsSettings)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -121,7 +288,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.error_outline, color: Colors.red),
-                title: const Text('配置读取失败'),
+                title: Text(l10n.setConfigLoadFailed),
                 subtitle: Text(_loadError!),
                 trailing: const Icon(Icons.refresh),
                 onTap: _load,
@@ -129,7 +296,70 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 16),
           ],
-          Text('互传', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.setRegionTitle, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.language),
+                  title: Text(l10n.setLanguage),
+                  subtitle: Text(_localeLabel(l10n, AppSettingsModel.instance.locale)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _pickLocale,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.public),
+                  title: Text(l10n.setTimeZoneCity),
+                  subtitle: Text(_cityName ?? l10n.setAutoDetect),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _pickCity,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(l10n.setDisplayTitle, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(l10n.setFontSize((_fontScale * 100).round())),
+                      ),
+                      Slider(
+                        value: _fontScale,
+                        min: 0.85,
+                        max: 1.4,
+                        divisions: 11,
+                        label: l10n.setFontSize((_fontScale * 100).round()),
+                        onChanged: (v) => setState(() => _fontScale = v),
+                        onChangeEnd: (v) =>
+                            AppSettingsModel.instance.setFontScale(v),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.text_fields),
+                  title: Text(l10n.setFont),
+                  subtitle: Text(_fontFamilyLabel(l10n, _fontFamily)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _pickFontFamily,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(l10n.setSectionTransfer,
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Card(
             child: cfg == null
@@ -144,8 +374,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       children: [
                         TextField(
                           controller: _deviceNameController,
-                          decoration:
-                              _decoration('设备名称', helper: '对方设备列表里显示的名字'),
+                          decoration: _decoration(l10n.setDeviceName,
+                              helper: l10n.setDeviceNameHelp),
                         ),
                         const SizedBox(height: 16),
                         TextField(
@@ -155,8 +385,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             FilteringTextInputFormatter.digitsOnly,
                           ],
                           decoration: _decoration(
-                            '监听端口',
-                            helper: '默认 $kLocalSendPort。被占用时会自动改用其他端口，不影响互传',
+                            l10n.setPortLabel,
+                            helper: l10n.setPortHelp(kLocalSendPort),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -164,26 +394,23 @@ class _SettingsPageState extends State<SettingsPage> {
                           controller: _pinController,
                           obscureText: true,
                           decoration: _decoration(
-                            '传输 PIN（可选）',
-                            helper: '留空表示不校验。设置后，对方必须输入才能推送文件',
+                            l10n.setPinLabel,
+                            helper: l10n.setPinHelp,
                           ),
                         ),
                         const Divider(height: 32),
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('校验文件哈希'),
-                          subtitle:
-                              const Text('收到文件后比对发送方提供的 SHA-256'),
+                          title: Text(l10n.setVerifyHash),
+                          subtitle: Text(l10n.setVerifyHashSub),
                           value: _verifyChecksums,
                           onChanged: (v) =>
                               setState(() => _verifyChecksums = v),
                         ),
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('启用 LocalSend 兼容'),
-                          subtitle: const Text(
-                            '与官方 LocalSend 同一网络自动互通：不用扫码，进入传输页就会自动发现',
-                          ),
+                          title: Text(l10n.setLsCompat),
+                          subtitle: Text(l10n.setLsCompatSub),
                           value: _lsCompatEnabled,
                           onChanged: (v) => setState(() => _lsCompatEnabled = v),
                         ),
@@ -200,7 +427,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('保存'),
+                                : Text(l10n.commonSave),
                           ),
                         ),
                       ],
@@ -208,13 +435,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
           ),
           const SizedBox(height: 24),
-          Text('关于', style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.setSectionAbout,
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Card(
             child: ListTile(
               leading: const Icon(Icons.info_outline, size: 32),
-              title: const Text('关于互传助手'),
-              subtitle: const Text('版本、开源许可与第三方组件'),
+              title: Text(l10n.setAboutTitle),
+              subtitle: Text(l10n.setAboutSub),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AboutPage()),

@@ -2,10 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l78z/main.dart';
 import 'package:l78z/yemian/calendar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  // 文案走 l10n 后环境语言决定断言文本；mock prefs 锁中文，避免 flutter_test
+  // 默认 en_US 让 find.text('主页面')扑空。MyApp 首帧后会异步 load 这份 prefs。
+  setUpAll(() {
+    SharedPreferences.setMockInitialValues({'app_locale': 'zh_CN'});
+  });
+
   testWidgets('默认进入主页面，底部导航顺序正确', (tester) async {
     await tester.pumpWidget(const MyApp());
+    // load() 是异步的，等它 notifyListeners 触发 MaterialApp 重建。
+    await tester.pumpAndSettle();
 
     // 默认展示主页面内容 + 导航栏同名标签
     expect(find.text('主页面'), findsNWidgets(2));
@@ -34,6 +43,8 @@ void main() {
 
   testWidgets('工具页可进入并含三个入口', (tester) async {
     await tester.pumpWidget(const MyApp());
+    // 与上一个测试同理：locale 由异步 load 决定，等一帧再找中文文案。
+    await tester.pumpAndSettle();
     await tester.tap(find.text('工具'));
     await tester.pumpAndSettle();
     expect(find.text('扫一扫'), findsOneWidget);
