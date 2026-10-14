@@ -67,6 +67,25 @@ void main() {
     expect(kCountryCodeToLocation['US'], 'America/New_York');
   });
 
+  test('主题色：默认朱砂，可切换并写回 prefs，脏 id 回落默认', () async {
+    final s = AppSettingsModel.instance;
+    expect(s.themeColorId, kThemeColorDefault);
+    expect(s.themeColor, kThemeColors[kThemeColorDefault]);
+
+    await s.setThemeColor('dailan');
+    expect(s.themeColorId, 'dailan');
+    expect(s.themeColor, kThemeColors['dailan']);
+
+    // 脏 id 直接忽略，不改当前值。
+    await s.setThemeColor('not-a-color');
+    expect(s.themeColorId, 'dailan');
+
+    // 写回 prefs，模拟重启后读回。
+    s.themeColorId = kThemeColorDefault;
+    await s.load();
+    expect(s.themeColorId, 'dailan');
+  });
+
   test('detectLocalCity：任何环境都返回一个真实存在的城市', () {
     final city = detectLocalCity();
     expect(city.location, isNotEmpty);

@@ -162,7 +162,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolsSettings => 'Settings';
 
   @override
-  String get toolsSettingsSub => 'Transfer config, version & licenses';
+  String get setThemeColor => 'Theme color';
+
+  @override
+  String get setThemeZhusha => 'Cinnabar';
+
+  @override
+  String get setThemeYanzhi => 'Rouge';
+
+  @override
+  String get setThemeDailan => 'Dai Blue';
+
+  @override
+  String get setThemeShiqing => 'Azurite';
+
+  @override
+  String get setThemeZhuqing => 'Bamboo Green';
+
+  @override
+  String get setThemeXiangse => 'Straw Yellow';
 
   @override
   String otdLoadFailed(String error) {

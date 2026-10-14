@@ -4,9 +4,9 @@ import '../l10n/app_localizations.dart';
 import 'lan_transfer_page.dart';
 import 'qr_gen_page.dart';
 import 'scan_page.dart';
-import 'settings_page.dart';
 
-/// 工具页：扫一扫 / 二维码生成 / 局域网传输 / 设置 入口。
+/// 工具页：扫一扫 / 二维码生成 / 局域网传输 入口。
+/// 设置入口已移到主页面 AppBar（右上角 ⚙），这里不再重复。
 class ToolsPage extends StatelessWidget {
   const ToolsPage({super.key});
 
@@ -31,12 +31,6 @@ class ToolsPage extends StatelessWidget {
         l10n.toolsLan,
         l10n.toolsLanSub,
         const LanTransferPage(),
-      ),
-      (
-        Icons.settings_outlined,
-        l10n.toolsSettings,
-        l10n.toolsSettingsSub,
-        const SettingsPage(),
       ),
     ];
     return Scaffold(

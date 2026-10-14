@@ -50,5 +50,18 @@ void main() {
     expect(find.text('扫一扫'), findsOneWidget);
     expect(find.text('二维码 / 条形码'), findsOneWidget);
     expect(find.text('局域网传输'), findsOneWidget);
+    // 设置入口已移到主页面，工具页不再出现。
+    expect(find.text('设置'), findsNothing);
+  });
+
+  testWidgets('主页面右上角齿轮直达设置', (tester) async {
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    // 设置页的配置卡在等 Rust 侧数据（测试环境不会完成），进度环会一直转，
+    // pumpAndSettle 会超时；等两帧让路由动画走完即可。
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('语言与地区'), findsOneWidget);
   });
 }

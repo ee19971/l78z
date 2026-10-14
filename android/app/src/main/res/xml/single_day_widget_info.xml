@@ -15,5 +15,6 @@
     android:minHeight="50dp"
     android:minWidth="110dp"
     android:previewImage="@mipmap/ic_launcher"
+    android:previewLayout="@layout/single_day_widget"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

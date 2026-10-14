@@ -592,33 +592,47 @@ class _CalendarPageState extends State<CalendarPage> {
           borderRadius: BorderRadius.circular(compact ? 8 : 6),
         ),
         alignment: Alignment.center,
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (showWeekday)
-                label(
-                  info.weekText,
-                  Theme.of(context).textTheme.labelSmall,
-                  color: isSelected ? scheme.onPrimary : Theme.of(context).hintColor,
-                ),
+        // 数字绝不参与缩放：这里曾把「数字 + 节日名」整体套 FittedBox，
+        // 节日名一长（如「南京大屠杀死难者国家公祭日」）数字跟着一起缩小。
+        // 现在数字固定字号，节日名独占 Flexible 行——格子矮/名字长时
+        // 只有它自己缩（FittedBox scaleDown），数字永不让步。
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (showWeekday)
               label(
-                '${date.day}',
-                compact ? Theme.of(context).textTheme.labelLarge : Theme.of(context).textTheme.titleSmall,
-                color: isSelected ? scheme.onPrimary : null,
-              ),
-              label(
-                info.cellLabel,
+                info.weekText,
                 Theme.of(context).textTheme.labelSmall,
-                color: isSelected
-                    ? scheme.onPrimary
-                    : (info.hasFestival || info.hasJieQi)
-                        ? scheme.primary
-                        : Theme.of(context).hintColor,
+                color: isSelected ? scheme.onPrimary : Theme.of(context).hintColor,
               ),
-            ],
-          ),
+            label(
+              '${date.day}',
+              (compact
+                      ? Theme.of(context).textTheme.labelLarge
+                      : Theme.of(context).textTheme.titleSmall)
+                  // 收紧行高：紧凑竖屏的格子高度极小，数字行的默认行高
+                  // 本身就能占满整个格子，节日名行就一像素都挤不出来了。
+                  ?.copyWith(height: 1.1),
+              color: isSelected ? scheme.onPrimary : null,
+            ),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  info.cellLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: isSelected
+                            ? scheme.onPrimary
+                            : (info.hasFestival || info.hasJieQi)
+                                ? scheme.primary
+                                : Theme.of(context).hintColor,
+                      ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

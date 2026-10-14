@@ -19,6 +19,7 @@ import 'festival_scan.dart';
 import 'festivals.dart';
 import 'onthisday_page.dart';
 import 'scan_page.dart';
+import 'settings_page.dart';
 import 'stopwatch_page.dart';
 import 'timezone_data.dart';
 
@@ -81,7 +82,18 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.mainTitle)),
+      appBar: AppBar(
+        title: Text(l10n.mainTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: l10n.toolsSettings,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsPage()),
+            ),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

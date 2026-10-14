@@ -76,7 +76,13 @@
   "toolsLan": "局域网传输",
   "toolsLanSub": "手机与电脑互传文本与文件",
   "toolsSettings": "设置",
-  "toolsSettingsSub": "互传配置、版本与开源许可",
+  "setThemeColor": "主题色",
+  "setThemeZhusha": "朱砂",
+  "setThemeYanzhi": "胭脂",
+  "setThemeDailan": "黛蓝",
+  "setThemeShiqing": "石青",
+  "setThemeZhuqing": "竹青",
+  "setThemeXiangse": "缃色",
 
   "otdLoadFailed": "数据加载失败：{error}",
   "@otdLoadFailed": {

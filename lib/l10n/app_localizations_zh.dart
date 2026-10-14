@@ -161,7 +161,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get toolsSettings => '设置';
 
   @override
-  String get toolsSettingsSub => '互传配置、版本与开源许可';
+  String get setThemeColor => '主题色';
+
+  @override
+  String get setThemeZhusha => '朱砂';
+
+  @override
+  String get setThemeYanzhi => '胭脂';
+
+  @override
+  String get setThemeDailan => '黛蓝';
+
+  @override
+  String get setThemeShiqing => '石青';
+
+  @override
+  String get setThemeZhuqing => '竹青';
+
+  @override
+  String get setThemeXiangse => '缃色';
 
   @override
   String otdLoadFailed(String error) {

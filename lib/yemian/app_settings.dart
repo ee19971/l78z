@@ -18,6 +18,24 @@ const String kFontFamilySans = 'NotoSansSC';
 
 const String kFontFamilySerif = 'NotoSerifSC';
 
+/// 主题色板：中国传统色，一色一名。
+///
+/// 值做 Material3 的 seed，由 [ColorScheme.fromSeed] 派生整套配色；
+/// id 同时是 prefs 存的值，所以**只增不改**——改了老用户的设置会失联。
+const Map<String, Color> kThemeColors = {
+  'zhusha': Color(0xFFE34234), // 朱砂
+  'yanzhi': Color(0xFF9D2933), // 胭脂
+  'dailan': Color(0xFF425066), // 黛蓝
+  'shiqing': Color(0xFF1685A9), // 石青
+  'zhuqing': Color(0xFF789262), // 竹青
+  'xiangse': Color(0xFFF0C239), // 缃色
+};
+
+/// 默认主题色：朱砂。
+const String kThemeColorDefault = 'zhusha';
+
+/// 主题色的显示名，与 [kThemeColors] 同序；i18n 见 l10n 的 setTheme* 系列。
+
 /// 应用级设置模型：改任何一项都会写 prefs 并通知 [MaterialApp] 重建。
 ///
 /// 单例而非 Provider/InheritedWidget：设置只有「读一次 + 偶尔改一项」，
@@ -36,11 +54,15 @@ class AppSettingsModel extends ChangeNotifier {
   /// 字体族：[kFontFamilySans] / [kFontFamilySerif] / 其他值 = 系统默认。
   String fontFamily = 'system';
 
+  /// 主题色 id，取值见 [kThemeColors]；非法值一律回落朱砂。
+  String themeColorId = kThemeColorDefault;
+
   static const String _kLocale = 'app_locale';
   static const String _kFontScale = 'app_font_scale';
   static const String _kFontFamily = 'app_font_family';
+  static const String _kThemeColor = 'app_theme_color';
 
-  /// 启动时读一次 prefs；没设过的项保持默认值（跟随系统/1.0/系统字体）。
+  /// 启动时读一次 prefs；没设过的项保持默认值（跟随系统/1.0/系统字体/朱砂）。
   Future<void> load() async {
     final sp = await SharedPreferences.getInstance();
     final raw = sp.getString(_kLocale);
@@ -51,6 +73,9 @@ class AppSettingsModel extends ChangeNotifier {
     };
     fontScale = sp.getDouble(_kFontScale) ?? 1.0;
     fontFamily = sp.getString(_kFontFamily) ?? 'system';
+    final colorId = sp.getString(_kThemeColor);
+    themeColorId =
+        kThemeColors.containsKey(colorId) ? colorId! : kThemeColorDefault;
     notifyListeners();
   }
 
@@ -83,6 +108,18 @@ class AppSettingsModel extends ChangeNotifier {
     await sp.setString(_kFontFamily, value);
     notifyListeners();
   }
+
+  /// 设主题色；id 不在色板里则忽略（防脏数据）。
+  Future<void> setThemeColor(String id) async {
+    if (!kThemeColors.containsKey(id)) return;
+    themeColorId = id;
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString(_kThemeColor, id);
+    notifyListeners();
+  }
+
+  /// 当前主题色；未知 id 回落朱砂。
+  Color get themeColor => kThemeColors[themeColorId] ?? kThemeColors[kThemeColorDefault]!;
 
   /// 当前生效的字体族名；系统默认时返回 null，让主题不传 fontFamily。
   String? get effectiveFontFamily =>

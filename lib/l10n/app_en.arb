@@ -76,7 +76,13 @@
   "toolsLan": "LAN Transfer",
   "toolsLanSub": "Transfer text & files between phone and PC",
   "toolsSettings": "Settings",
-  "toolsSettingsSub": "Transfer config, version & licenses",
+  "setThemeColor": "Theme color",
+  "setThemeZhusha": "Cinnabar",
+  "setThemeYanzhi": "Rouge",
+  "setThemeDailan": "Dai Blue",
+  "setThemeShiqing": "Azurite",
+  "setThemeZhuqing": "Bamboo Green",
+  "setThemeXiangse": "Straw Yellow",
 
   "otdLoadFailed": "Failed to load data: {error}",
   "@otdLoadFailed": {

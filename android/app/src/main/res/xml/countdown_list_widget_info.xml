@@ -11,5 +11,6 @@
     android:minHeight="140dp"
     android:minWidth="180dp"
     android:previewImage="@mipmap/ic_launcher"
+    android:previewLayout="@layout/countdown_list_widget"
     android:resizeMode="vertical"
     android:widgetCategory="home_screen" />

@@ -10,6 +10,7 @@ import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
+import android.util.Log
 import com.example.l78z.R
 
 /**
@@ -51,25 +52,33 @@ class SingleDayConfigActivity : Activity() {
 
         setContentView(R.layout.single_day_config_activity)
 
-        events = CountdownStore.events(this)
-        // 默认选中：这个 widget 上次绑过的（重复进入配置页时），否则置顶的，再退回第一条。
-        selectedId = CountdownStore.pickForWidget(this, appWidgetId)?.id
+        // 配置页由桌面进程拉起，onCreate 里任何异常都会让系统弹
+        // 「载入窗口小部件时出现问题」。下面整段兜住：兜不住就干净退出
+        // （结果保持 CANCELED，系统不会把部件加到桌面）。
+        try {
+            events = CountdownStore.events(this)
+            // 默认选中：这个 widget 上次绑过的（重复进入配置页时），否则置顶的，再退回第一条。
+            selectedId = CountdownStore.pickForWidget(this, appWidgetId)?.id
 
-        val empty = findViewById<TextView>(R.id.empty_hint)
-        val list = findViewById<ListView>(R.id.event_list)
-        if (events.isEmpty()) {
-            list.visibility = View.GONE
-            empty.visibility = View.VISIBLE
+            val empty = findViewById<TextView>(R.id.empty_hint)
+            val list = findViewById<ListView>(R.id.event_list)
+            if (events.isEmpty()) {
+                list.visibility = View.GONE
+                empty.visibility = View.VISIBLE
+            }
+
+            adapter = RowAdapter()
+            list.adapter = adapter
+            list.setOnItemClickListener { _, _, position, _ ->
+                selectedId = events[position].id
+                adapter.notifyDataSetChanged()
+            }
+
+            findViewById<Button>(R.id.btn_confirm).setOnClickListener { confirm() }
+        } catch (t: Throwable) {
+            Log.e("WidgetSafety", "single-day config failed", t)
+            finish()
         }
-
-        adapter = RowAdapter()
-        list.adapter = adapter
-        list.setOnItemClickListener { _, _, position, _ ->
-            selectedId = events[position].id
-            adapter.notifyDataSetChanged()
-        }
-
-        findViewById<Button>(R.id.btn_confirm).setOnClickListener { confirm() }
     }
 
     private fun confirm() {

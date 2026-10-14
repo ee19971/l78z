@@ -380,11 +380,47 @@ abstract class AppLocalizations {
   /// **'设置'**
   String get toolsSettings;
 
-  /// No description provided for @toolsSettingsSub.
+  /// No description provided for @setThemeColor.
   ///
   /// In zh, this message translates to:
-  /// **'互传配置、版本与开源许可'**
-  String get toolsSettingsSub;
+  /// **'主题色'**
+  String get setThemeColor;
+
+  /// No description provided for @setThemeZhusha.
+  ///
+  /// In zh, this message translates to:
+  /// **'朱砂'**
+  String get setThemeZhusha;
+
+  /// No description provided for @setThemeYanzhi.
+  ///
+  /// In zh, this message translates to:
+  /// **'胭脂'**
+  String get setThemeYanzhi;
+
+  /// No description provided for @setThemeDailan.
+  ///
+  /// In zh, this message translates to:
+  /// **'黛蓝'**
+  String get setThemeDailan;
+
+  /// No description provided for @setThemeShiqing.
+  ///
+  /// In zh, this message translates to:
+  /// **'石青'**
+  String get setThemeShiqing;
+
+  /// No description provided for @setThemeZhuqing.
+  ///
+  /// In zh, this message translates to:
+  /// **'竹青'**
+  String get setThemeZhuqing;
+
+  /// No description provided for @setThemeXiangse.
+  ///
+  /// In zh, this message translates to:
+  /// **'缃色'**
+  String get setThemeXiangse;
 
   /// No description provided for @otdLoadFailed.
   ///

@@ -73,6 +73,13 @@ class _MyAppState extends State<MyApp> {
       builder: (context, _) {
         final settings = AppSettingsModel.instance;
         final family = settings.effectiveFontFamily;
+        // 始终给主题：seed 是当前选的中国传统色（默认朱砂），Material3 由此
+        // 派生整套配色，选中态/按钮/进度条全跟随；字体族是叠加项，选了
+        // 系统默认就不动 textTheme。
+        final base = ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: settings.themeColor),
+        );
         return MaterialApp(
           locale: settings.locale,
           localizationsDelegates: const [
@@ -83,12 +90,12 @@ class _MyAppState extends State<MyApp> {
           // 换字体族时同步给 textTheme 设 fontFamily；生僻字回落系统字体，
           // 靠 fontFamilyFallback 兜底，避免子集化字体缺字显示豆腐块。
           theme: family == null
-              ? null
-              : ThemeData(
-                  textTheme: ThemeData().textTheme.apply(
-                        fontFamily: family,
-                        fontFamilyFallback: const ['sans-serif'],
-                      ),
+              ? base
+              : base.copyWith(
+                  textTheme: base.textTheme.apply(
+                    fontFamily: family,
+                    fontFamilyFallback: const ['sans-serif'],
+                  ),
                 ),
           // 全局字号缩放：设置页拖滑杆即时生效，覆盖所有文本样式。
           builder: (context, child) => MediaQuery(

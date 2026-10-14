@@ -32,37 +32,41 @@ class LifeProgressWidget : AppWidgetProvider() {
         }
 
         fun updateOne(context: Context, mgr: AppWidgetManager, id: Int) {
-            val views = RemoteViews(context.packageName, R.layout.life_progress_widget)
-            val life = CountdownStore.life(context)
-            val pcts = CountdownStore.periodPercents()
+            // 异常冒泡到 launcher = 系统的「载入窗口小部件时出现问题」，
+            // 统一走 WidgetSafety 兜底（onUpdate / updateAll 都经由这里）。
+            WidgetSafety.guard(context, mgr, id, R.layout.life_progress_widget) {
+                val views = RemoteViews(context.packageName, R.layout.life_progress_widget)
+                val life = CountdownStore.life(context)
+                val pcts = CountdownStore.periodPercents()
 
-            // 格言：设置过就用用户的（空串是用户主动清空，留白即可），
-            // 从没设置过才退回默认那句——留空会让部件顶部塌掉一块。
-            val quote = if (life == null) {
-                CountdownStore.defaultQuote()
-            } else {
-                life.quote
+                // 格言：设置过就用用户的（空串是用户主动清空，留白即可），
+                // 从没设置过才退回默认那句——留空会让部件顶部塌掉一块。
+                val quote = if (life == null) {
+                    CountdownStore.defaultQuote()
+                } else {
+                    life.quote
+                }
+                views.setTextViewText(R.id.quote, quote)
+
+                // max=1000 而非 100：百分比要显示两位小数，而 setProgressBar 只吃
+                // 整数，千分位才够把 0.01% 的差别体现出来。
+                bindBar(views, R.id.bar_day, R.id.pct_day, pcts[0])
+                bindBar(views, R.id.bar_week, R.id.pct_week, pcts[1])
+                bindBar(views, R.id.bar_month, R.id.pct_month, pcts[2])
+                bindBar(views, R.id.bar_year, R.id.pct_year, pcts[3])
+
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                val pi = PendingIntent.getActivity(
+                    context,
+                    id + 0x1000, // 与单日/列表部件的 requestCode 错开，避免互相覆盖
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                )
+                views.setOnClickPendingIntent(R.id.widget_root, pi)
+                mgr.updateAppWidget(id, views)
             }
-            views.setTextViewText(R.id.quote, quote)
-
-            // max=1000 而非 100：百分比要显示两位小数，而 setProgressBar 只吃
-            // 整数，千分位才够把 0.01% 的差别体现出来。
-            bindBar(views, R.id.bar_day, R.id.pct_day, pcts[0])
-            bindBar(views, R.id.bar_week, R.id.pct_week, pcts[1])
-            bindBar(views, R.id.bar_month, R.id.pct_month, pcts[2])
-            bindBar(views, R.id.bar_year, R.id.pct_year, pcts[3])
-
-            val intent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            val pi = PendingIntent.getActivity(
-                context,
-                id + 0x1000, // 与单日/列表部件的 requestCode 错开，避免互相覆盖
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-            views.setOnClickPendingIntent(R.id.widget_root, pi)
-            mgr.updateAppWidget(id, views)
         }
 
         private fun bindBar(views: RemoteViews, barId: Int, pctId: Int, percent: Double) {

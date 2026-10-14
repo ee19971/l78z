@@ -39,38 +39,43 @@ class SingleDayWidget : AppWidgetProvider() {
         }
 
         fun updateOne(context: Context, mgr: AppWidgetManager, id: Int) {
-            val views = RemoteViews(context.packageName, R.layout.single_day_widget)
-            val ev = CountdownStore.pickForWidget(context, id)
+            // 异常冒泡到 launcher 就是系统的「载入窗口小部件时出现问题」，
+            // 统一走 WidgetSafety 兜底（onUpdate / updateAll / 配置页确认
+            // 全部经由这里，一处兜住三条链路）。
+            WidgetSafety.guard(context, mgr, id, R.layout.single_day_widget) {
+                val views = RemoteViews(context.packageName, R.layout.single_day_widget)
+                val ev = CountdownStore.pickForWidget(context, id)
 
-            if (ev == null) {
-                // 一条都没有：把选择引导写上去，比留一片空白有用。
-                views.setTextViewText(R.id.title, context.getString(R.string.widget_config_title))
-                views.setTextViewText(R.id.number, "—")
-                views.setTextViewText(R.id.caption, "")
-                views.setTextViewText(R.id.date, context.getString(R.string.widget_config_empty))
-            } else {
-                views.setTextViewText(R.id.title, ev.title)
-                views.setTextViewText(R.id.number, CountdownStore.dayNumber(ev))
-                views.setTextViewText(R.id.caption, "天")
-                views.setTextViewText(
-                    R.id.date,
-                    "${CountdownStore.statusLabel(ev)} · ${ev.date}",
+                if (ev == null) {
+                    // 一条都没有：把选择引导写上去，比留一片空白有用。
+                    views.setTextViewText(R.id.title, context.getString(R.string.widget_config_title))
+                    views.setTextViewText(R.id.number, "—")
+                    views.setTextViewText(R.id.caption, "")
+                    views.setTextViewText(R.id.date, context.getString(R.string.widget_config_empty))
+                } else {
+                    views.setTextViewText(R.id.title, ev.title)
+                    views.setTextViewText(R.id.number, CountdownStore.dayNumber(ev))
+                    views.setTextViewText(R.id.caption, "天")
+                    views.setTextViewText(
+                        R.id.date,
+                        "${CountdownStore.statusLabel(ev)} · ${ev.date}",
+                    )
+                }
+
+                // 点部件打开应用。按 widget id 各建一个 PendingIntent：
+                // 多个部件共用同一个 requestCode 的话，后建的会把前一个覆盖掉。
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                val pi = PendingIntent.getActivity(
+                    context,
+                    id,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
+                views.setOnClickPendingIntent(R.id.widget_root, pi)
+                mgr.updateAppWidget(id, views)
             }
-
-            // 点部件打开应用。按 widget id 各建一个 PendingIntent：
-            // 多个部件共用同一个 requestCode 的话，后建的会把前一个覆盖掉。
-            val intent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            val pi = PendingIntent.getActivity(
-                context,
-                id,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-            views.setOnClickPendingIntent(R.id.widget_root, pi)
-            mgr.updateAppWidget(id, views)
         }
     }
 }

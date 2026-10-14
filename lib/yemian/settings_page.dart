@@ -35,8 +35,11 @@ class _SettingsPageState extends State<SettingsPage> {
   // 显示与地区：直接读单例内存值（main() 里已 load），改动也走单例，
   // MaterialApp 靠 notifyListeners 即时重建，这里只是同步显示状态。
   String? _cityName;
-  late double _fontScale;
-  late String _fontFamily;
+  // 带默认值而非 late：initState 里的加载是异步的，首帧 build 跑在加载
+  // 完成之前，late 字段会直接 LateError 把设置页崩掉。
+  double _fontScale = 1.0;
+  String _fontFamily = 'system';
+  String _themeColorId = kThemeColorDefault;
 
   final _deviceNameController = TextEditingController();
   final _portController = TextEditingController();
@@ -58,6 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       _fontScale = AppSettingsModel.instance.fontScale;
       _fontFamily = AppSettingsModel.instance.fontFamily;
+      _themeColorId = AppSettingsModel.instance.themeColorId;
       _cityName = loc == null ? null : cityByLocation(loc).name;
     });
   }
@@ -149,6 +153,18 @@ class _SettingsPageState extends State<SettingsPage> {
         kFontFamilySans => l10n.setFontSans,
         kFontFamilySerif => l10n.setFontSerif,
         _ => l10n.setFontSystem,
+      };
+
+  /// 中国传统色的显示名，key 与 [kThemeColors] 一一对应。
+  static String _themeColorLabel(AppLocalizations l10n, String id) =>
+      switch (id) {
+        'zhusha' => l10n.setThemeZhusha,
+        'yanzhi' => l10n.setThemeYanzhi,
+        'dailan' => l10n.setThemeDailan,
+        'shiqing' => l10n.setThemeShiqing,
+        'zhuqing' => l10n.setThemeZhuqing,
+        'xiangse' => l10n.setThemeXiangse,
+        _ => id,
       };
 
   /// 语言三选。pop 值用哨兵字符串区分「跟随系统」与「取消」：
@@ -245,6 +261,40 @@ class _SettingsPageState extends State<SettingsPage> {
     if (picked == null) return; // 取消
     await AppSettingsModel.instance.setFontFamily(picked);
     if (mounted) setState(() => _fontFamily = picked);
+  }
+
+  /// 主题色六选：色点 + 传统色名，选中打勾。
+  /// 换色走 AppSettingsModel 通知 MaterialApp 重建，全应用即时生效。
+  Future<void> _pickThemeColor() async {
+    final l10n = AppLocalizations.of(context)!;
+    final picked = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(l10n.setThemeColor),
+        children: [
+          for (final entry in kThemeColors.entries)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, entry.key),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration:
+                        BoxDecoration(color: entry.value, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(_themeColorLabel(l10n, entry.key))),
+                  if (entry.key == _themeColorId) const Icon(Icons.check, size: 20),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+    if (picked == null) return; // 取消
+    await AppSettingsModel.instance.setThemeColor(picked);
+    if (mounted) setState(() => _themeColorId = picked);
   }
 
   /// 字体选项内容：勾选 + 名称 + 同字体渲染的预览文字。
@@ -353,6 +403,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   subtitle: Text(_fontFamilyLabel(l10n, _fontFamily)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _pickFontFamily,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Icon(Icons.palette_outlined,
+                      color: kThemeColors[_themeColorId]),
+                  title: Text(l10n.setThemeColor),
+                  subtitle: Text(_themeColorLabel(l10n, _themeColorId)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _pickThemeColor,
                 ),
               ],
             ),
