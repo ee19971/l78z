@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,7 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
   // 带默认值而非 late：initState 里的加载是异步的，首帧 build 跑在加载
   // 完成之前，late 字段会直接 LateError 把设置页崩掉。
   double _fontScale = 1.0;
-  String _fontFamily = 'system';
+  String _fontFamily = kFontFamilyWenKai;
   String _themeColorId = kThemeColorDefault;
 
   final _deviceNameController = TextEditingController();
@@ -192,8 +193,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   static String _fontFamilyLabel(AppLocalizations l10n, String family) =>
       switch (family) {
+        kFontFamilyWenKai => l10n.setFontWenKai,
         kFontFamilySans => l10n.setFontSans,
         kFontFamilySerif => l10n.setFontSerif,
+        kFontFamilyCustom => l10n.setFontCustom,
         _ => l10n.setFontSystem,
       };
 
@@ -263,46 +266,134 @@ class _SettingsPageState extends State<SettingsPage> {
     if (mounted) setState(() => _cityName = city.name);
   }
 
-  /// 字体族三选，每项带同字体渲染的预览文字。
+  /// 字体选择弹窗：内置四选 + 自定义字体行。
+  ///
+  /// 排版：每行「勾选 + 名称 + 同字体渲染的预览」，预览直接用候选字体画，
+  /// 所见即所得；自定义行另带「选择文件…」按钮，选完就地刷新预览。
   Future<void> _pickFontFamily() async {
     final l10n = AppLocalizations.of(context)!;
-    final picked = await showDialog<String>(
+    await showDialog<void>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: Text(l10n.setFont),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return SimpleDialog(
+            title: Text(l10n.setFont),
+            // 自定义行比其它行宽（要放文件名 + 按钮），给足弹窗宽度。
+            constraints: const BoxConstraints(maxWidth: 420),
+            children: [
+              for (final family in kFontFamilyOptions)
+                if (family == kFontFamilyCustom)
+                  _customFontRow(l10n, ctx, setDialogState)
+                else
+                  SimpleDialogOption(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await AppSettingsModel.instance.setFontFamily(family);
+                      if (mounted) setState(() => _fontFamily = family);
+                    },
+                    child: _fontOptionContent(
+                      l10n,
+                      _fontFamily == family,
+                      _fontFamilyLabel(l10n, family),
+                      family: family == 'system' ? null : family,
+                    ),
+                  ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// 自定义字体行：勾选 + 名称 + 已选文件名 + 「选择文件…」。
+  ///
+  /// 文件缺失时（被移动/删除）副标题直接标出来，让用户知道为什么没生效。
+  Widget _customFontRow(
+    AppLocalizations l10n,
+    BuildContext ctx,
+    StateSetter setDialogState,
+  ) {
+    final settings = AppSettingsModel.instance;
+    final path = settings.customFontPath;
+    final name = path?.split(Platform.pathSeparator).last;
+    String subtitle;
+    if (path == null) {
+      subtitle = l10n.setFontCustomNone;
+    } else if (!settings.customFontLoaded) {
+      subtitle = '$name — ${l10n.setFontCustomMissing}';
+    } else {
+      subtitle = name!;
+    }
+    return SimpleDialogOption(
+      // 点行本身只在「已选且加载成功」时切过去；否则引导去选文件。
+      onPressed: path == null || !settings.customFontLoaded
+          ? () => _pickCustomFontFile(ctx, setDialogState)
+          : () async {
+              Navigator.pop(ctx);
+              await AppSettingsModel.instance
+                  .setFontFamily(kFontFamilyCustom);
+              if (mounted) setState(() => _fontFamily = kFontFamilyCustom);
+            },
+      child: Row(
         children: [
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, 'system'),
-            child: _fontOptionContent(
-              l10n,
-              _fontFamily == 'system',
-              l10n.setFontSystem,
+          if (_fontFamily == kFontFamilyCustom)
+            const Icon(Icons.check, size: 18)
+          else
+            const SizedBox(width: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.setFontCustom),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: Theme.of(ctx)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Theme.of(ctx).hintColor),
+                ),
+                if (path != null && settings.customFontLoaded) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.setFontPreview,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontFamily: kFontFamilyCustom,
+                      fontFamilyFallback: ['sans-serif'],
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, kFontFamilySans),
-            child: _fontOptionContent(
-              l10n,
-              _fontFamily == kFontFamilySans,
-              l10n.setFontSans,
-              family: kFontFamilySans,
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, kFontFamilySerif),
-            child: _fontOptionContent(
-              l10n,
-              _fontFamily == kFontFamilySerif,
-              l10n.setFontSerif,
-              family: kFontFamilySerif,
-            ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: () => _pickCustomFontFile(ctx, setDialogState),
+            child: Text(l10n.setFontCustomPick),
           ),
         ],
       ),
     );
-    if (picked == null) return; // 取消
-    await AppSettingsModel.instance.setFontFamily(picked);
-    if (mounted) setState(() => _fontFamily = picked);
+  }
+
+  /// 选一个 ttf/otf，记原路径、注册字体、立刻切到自定义档。
+  Future<void> _pickCustomFontFile(
+      BuildContext ctx, StateSetter setDialogState) async {
+    final files = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['ttf', 'otf'],
+    );
+    final path = files.singleOrNull?.path;
+    if (path == null) return; // 取消或多选歧义
+    await AppSettingsModel.instance.setCustomFontPath(path);
+    if (!mounted) return;
+    setState(() => _fontFamily = kFontFamilyCustom);
+    // 弹窗还开着：就地刷新成新文件的预览。
+    if (ctx.mounted) setDialogState(() {});
   }
 
   /// 主题色六选：色点 + 传统色名，选中打勾。

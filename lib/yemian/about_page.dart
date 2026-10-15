@@ -44,6 +44,14 @@ const List<_Lib> _rustLibs = [
   _Lib('tokio-util', '0.7.20', 'MIT'),
 ];
 
+/// 内置字体。均为 SIL Open Font License 1.1——可自由商用、嵌入、再分发，
+/// 分发衍生版本时需保留原许可与版权声明。
+const List<_Lib> _fontLibs = [
+  _Lib('LXGW WenKai GB（霞鹜文楷）', 'GB Regular / Medium', 'SIL OFL 1.1'),
+  _Lib('Noto Sans SC（思源黑体）', 'Regular', 'SIL OFL 1.1'),
+  _Lib('Noto Serif SC（思源宋体）', 'Regular', 'SIL OFL 1.1'),
+];
+
 /// 关于页：版本、本机信息、开源许可、第三方组件。
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -203,6 +211,11 @@ class _AboutPageState extends State<AboutPage> {
           Text('Rust', style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 4),
           _libList(_rustLibs),
+          const SizedBox(height: 16),
+          Text(l10n.aboutSectionFonts,
+              style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 4),
+          _libList(_fontLibs),
           const SizedBox(height: 24),
         ],
       ),

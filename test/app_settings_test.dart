@@ -20,16 +20,18 @@ void main() {
     final s = AppSettingsModel.instance;
     s.locale = null;
     s.fontScale = 1.0;
-    s.fontFamily = 'system';
+    s.fontFamily = kFontFamilyWenKai;
+    s.customFontPath = null;
+    s.customFontLoaded = false;
   });
 
-  test('load：空 prefs 时保持默认（跟随系统 / 1.0 / 系统字体）', () async {
+  test('load：空 prefs 时保持默认（跟随系统 / 1.0 / 霞鹜文楷）', () async {
     await AppSettingsModel.instance.load();
     final s = AppSettingsModel.instance;
     expect(s.locale, isNull);
     expect(s.fontScale, 1.0);
-    expect(s.fontFamily, 'system');
-    expect(s.effectiveFontFamily, isNull);
+    expect(s.fontFamily, kFontFamilyWenKai);
+    expect(s.effectiveFontFamily, kFontFamilyWenKai);
   });
 
   test('load：zh_CN / en 与字号、字体族一起恢复', () async {
@@ -65,6 +67,24 @@ void main() {
     expect(kCountryCodeToLocation['CN'], 'Asia/Shanghai');
     expect(kCountryCodeToLocation['JP'], 'Asia/Tokyo');
     expect(kCountryCodeToLocation['US'], 'America/New_York');
+  });
+
+  test('自定义字体：文件缺失时 effectiveFontFamily 回落系统默认', () async {
+    final s = AppSettingsModel.instance;
+    await s.setCustomFontPath('X:\\不存在\\nowhere.ttf');
+    expect(s.fontFamily, kFontFamilyCustom);
+    expect(s.customFontLoaded, isFalse);
+    // 注册失败 → 主题拿不到族名，回退系统默认。
+    expect(s.effectiveFontFamily, isNull);
+    // prefs 里路径和档位都记下了，重启后按原路径再试一次。
+    final sp = await SharedPreferences.getInstance();
+    expect(sp.getString('app_custom_font_path'), 'X:\\不存在\\nowhere.ttf');
+    expect(sp.getString('app_font_family'), kFontFamilyCustom);
+
+    await s.clearCustomFontPath();
+    expect(s.customFontPath, isNull);
+    expect(s.fontFamily, 'system');
+    expect(sp.getString('app_custom_font_path'), isNull);
   });
 
   test('主题色：默认朱砂，可切换并写回 prefs，脏 id 回落默认', () async {

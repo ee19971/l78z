@@ -71,10 +71,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get setFontSystem => '系统默认';
 
   @override
+  String get setFontWenKai => '霞鹜文楷';
+
+  @override
   String get setFontSans => '思源黑体';
 
   @override
   String get setFontSerif => '思源宋体';
+
+  @override
+  String get setFontCustom => '自定义字体';
+
+  @override
+  String get setFontCustomPick => '选择文件…';
+
+  @override
+  String get setFontCustomNone => '未选择字体文件';
+
+  @override
+  String get setFontCustomMissing => '文件不存在，已回退系统默认';
 
   @override
   String setFontSize(int percent) {
@@ -636,6 +651,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String calPassedDays(int days) {
     return '已过 $days 天';
   }
+
+  @override
+  String get calSettings => '日历显示设置';
+
+  @override
+  String get calCellLabelTitle => '日期格子小字';
+
+  @override
+  String get calCellJieqiLunar => '节气 + 农历日';
+
+  @override
+  String get calCellFull => '完整（节日、节气、农历日）';
+
+  @override
+  String get calCellLunarOnly => '只显示农历日';
+
+  @override
+  String get calCellHidden => '不显示';
+
+  @override
+  String get calWeekStartTitle => '每周从';
+
+  @override
+  String get calWeekStartSunday => '周日开始';
+
+  @override
+  String get calWeekStartMonday => '周一开始';
 
   @override
   String get scanTitlePair => '扫码配对';
@@ -1240,6 +1282,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aboutSectionThirdParty => '第三方组件';
+
+  @override
+  String get aboutSectionFonts => '内置字体';
 
   @override
   String get commonSaved => '已保存';

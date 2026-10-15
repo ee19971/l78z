@@ -72,10 +72,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setFontSystem => 'System default';
 
   @override
+  String get setFontWenKai => 'LXGW WenKai';
+
+  @override
   String get setFontSans => 'Noto Sans SC';
 
   @override
   String get setFontSerif => 'Noto Serif SC';
+
+  @override
+  String get setFontCustom => 'Custom font';
+
+  @override
+  String get setFontCustomPick => 'Choose file…';
+
+  @override
+  String get setFontCustomNone => 'No font file chosen';
+
+  @override
+  String get setFontCustomMissing => 'File missing, reverted to system default';
 
   @override
   String setFontSize(int percent) {
@@ -641,6 +656,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String calPassedDays(int days) {
     return '$days days ago';
   }
+
+  @override
+  String get calSettings => 'Calendar display';
+
+  @override
+  String get calCellLabelTitle => 'Day cell caption';
+
+  @override
+  String get calCellJieqiLunar => 'Solar term + lunar date';
+
+  @override
+  String get calCellFull => 'Full (festival, solar term, lunar date)';
+
+  @override
+  String get calCellLunarOnly => 'Lunar date only';
+
+  @override
+  String get calCellHidden => 'Hidden';
+
+  @override
+  String get calWeekStartTitle => 'Week starts on';
+
+  @override
+  String get calWeekStartSunday => 'Sunday';
+
+  @override
+  String get calWeekStartMonday => 'Monday';
 
   @override
   String get scanTitlePair => 'Pair by QR';
@@ -1251,6 +1293,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutSectionThirdParty => 'Third-party components';
+
+  @override
+  String get aboutSectionFonts => 'Bundled fonts';
 
   @override
   String get commonSaved => 'Saved';

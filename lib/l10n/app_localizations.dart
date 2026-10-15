@@ -212,6 +212,12 @@ abstract class AppLocalizations {
   /// **'系统默认'**
   String get setFontSystem;
 
+  /// No description provided for @setFontWenKai.
+  ///
+  /// In zh, this message translates to:
+  /// **'霞鹜文楷'**
+  String get setFontWenKai;
+
   /// No description provided for @setFontSans.
   ///
   /// In zh, this message translates to:
@@ -223,6 +229,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'思源宋体'**
   String get setFontSerif;
+
+  /// No description provided for @setFontCustom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义字体'**
+  String get setFontCustom;
+
+  /// No description provided for @setFontCustomPick.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择文件…'**
+  String get setFontCustomPick;
+
+  /// No description provided for @setFontCustomNone.
+  ///
+  /// In zh, this message translates to:
+  /// **'未选择字体文件'**
+  String get setFontCustomNone;
+
+  /// No description provided for @setFontCustomMissing.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件不存在，已回退系统默认'**
+  String get setFontCustomMissing;
 
   /// No description provided for @setFontSize.
   ///
@@ -1225,6 +1255,60 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已过 {days} 天'**
   String calPassedDays(int days);
+
+  /// No description provided for @calSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'日历显示设置'**
+  String get calSettings;
+
+  /// No description provided for @calCellLabelTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'日期格子小字'**
+  String get calCellLabelTitle;
+
+  /// No description provided for @calCellJieqiLunar.
+  ///
+  /// In zh, this message translates to:
+  /// **'节气 + 农历日'**
+  String get calCellJieqiLunar;
+
+  /// No description provided for @calCellFull.
+  ///
+  /// In zh, this message translates to:
+  /// **'完整（节日、节气、农历日）'**
+  String get calCellFull;
+
+  /// No description provided for @calCellLunarOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'只显示农历日'**
+  String get calCellLunarOnly;
+
+  /// No description provided for @calCellHidden.
+  ///
+  /// In zh, this message translates to:
+  /// **'不显示'**
+  String get calCellHidden;
+
+  /// No description provided for @calWeekStartTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'每周从'**
+  String get calWeekStartTitle;
+
+  /// No description provided for @calWeekStartSunday.
+  ///
+  /// In zh, this message translates to:
+  /// **'周日开始'**
+  String get calWeekStartSunday;
+
+  /// No description provided for @calWeekStartMonday.
+  ///
+  /// In zh, this message translates to:
+  /// **'周一开始'**
+  String get calWeekStartMonday;
 
   /// No description provided for @scanTitlePair.
   ///
@@ -2233,6 +2317,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'第三方组件'**
   String get aboutSectionThirdParty;
+
+  /// No description provided for @aboutSectionFonts.
+  ///
+  /// In zh, this message translates to:
+  /// **'内置字体'**
+  String get aboutSectionFonts;
 
   /// No description provided for @commonSaved.
   ///

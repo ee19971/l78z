@@ -31,8 +31,13 @@
   "setAutoDetect": "自动检测",
   "setFont": "字体",
   "setFontSystem": "系统默认",
+  "setFontWenKai": "霞鹜文楷",
   "setFontSans": "思源黑体",
   "setFontSerif": "思源宋体",
+  "setFontCustom": "自定义字体",
+  "setFontCustomPick": "选择文件…",
+  "setFontCustomNone": "未选择字体文件",
+  "setFontCustomMissing": "文件不存在，已回退系统默认",
   "setFontSize": "字号  {percent}%",
   "@setFontSize": {
     "placeholders": {
@@ -363,6 +368,15 @@
       "days": { "type": "int" }
     }
   },
+  "calSettings": "日历显示设置",
+  "calCellLabelTitle": "日期格子小字",
+  "calCellJieqiLunar": "节气 + 农历日",
+  "calCellFull": "完整（节日、节气、农历日）",
+  "calCellLunarOnly": "只显示农历日",
+  "calCellHidden": "不显示",
+  "calWeekStartTitle": "每周从",
+  "calWeekStartSunday": "周日开始",
+  "calWeekStartMonday": "周一开始",
 
   "scanTitlePair": "扫码配对",
   "scanTitleOcr": "OCR 识别",
@@ -803,6 +817,7 @@
   "aboutLicenseTitle": "本项目采用 Apache License 2.0",
   "aboutLicenseBody": "允许商业使用、修改与分发。分发本软件的副本时，\n请保留仓库中的 LICENSE 与 NOTICE 文件。\n\n完整许可文本见项目根目录的 LICENSE 文件。",
   "aboutSectionThirdParty": "第三方组件",
+  "aboutSectionFonts": "内置字体",
 
   "commonSaved": "已保存",
   "commonSaveFailed": "保存失败：{error}",

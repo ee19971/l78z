@@ -31,8 +31,13 @@
   "setAutoDetect": "Auto detected",
   "setFont": "Font",
   "setFontSystem": "System default",
+  "setFontWenKai": "LXGW WenKai",
   "setFontSans": "Noto Sans SC",
   "setFontSerif": "Noto Serif SC",
+  "setFontCustom": "Custom font",
+  "setFontCustomPick": "Choose file…",
+  "setFontCustomNone": "No font file chosen",
+  "setFontCustomMissing": "File missing, reverted to system default",
   "setFontSize": "Font size  {percent}%",
   "@setFontSize": {
     "placeholders": {
@@ -363,6 +368,15 @@
       "days": { "type": "int" }
     }
   },
+  "calSettings": "Calendar display",
+  "calCellLabelTitle": "Day cell caption",
+  "calCellJieqiLunar": "Solar term + lunar date",
+  "calCellFull": "Full (festival, solar term, lunar date)",
+  "calCellLunarOnly": "Lunar date only",
+  "calCellHidden": "Hidden",
+  "calWeekStartTitle": "Week starts on",
+  "calWeekStartSunday": "Sunday",
+  "calWeekStartMonday": "Monday",
 
   "scanTitlePair": "Pair by QR",
   "scanTitleOcr": "OCR Scan",
@@ -803,6 +817,7 @@
   "aboutLicenseTitle": "This project is licensed under the Apache License 2.0",
   "aboutLicenseBody": "Commercial use, modification and distribution are allowed.\nWhen redistributing copies, keep the LICENSE and NOTICE files of the repository.\n\nThe full license text is in the LICENSE file at the project root.",
   "aboutSectionThirdParty": "Third-party components",
+  "aboutSectionFonts": "Bundled fonts",
 
   "commonSaved": "Saved",
   "commonSaveFailed": "Save failed: {error}",

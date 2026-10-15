@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../l10n/app_localizations.dart';
+import 'calendar_prefs.dart';
 import 'festivals.dart';
 
 /// 视图层级：年 > 月 > 周 > 日
@@ -90,13 +91,24 @@ class _CalendarPageState extends State<CalendarPage> {
     final now = DateTime.now();
     _today = DateTime(now.year, now.month, now.day);
     _selectedDate = _today;
+    // 偏好异步读盘：首帧先按内存默认渲染，读完再刷一次（和设置页同套路）。
+    CalendarPrefs.load().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   static bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  static DateTime _weekStart(DateTime date) =>
-      date.subtract(Duration(days: date.weekday % 7));
+  static DateTime _weekStart(DateTime date) => CalendarPrefs.weekStartMonday
+      ? date.subtract(Duration(days: date.weekday - 1))
+      : date.subtract(Duration(days: date.weekday % 7));
+
+  /// 月视图首格偏移：当月 1 号落在周几（相对周起始日）。
+  static int _firstWeekdayOffset(DateTime monthFirst) =>
+      CalendarPrefs.weekStartMonday
+          ? (monthFirst.weekday + 6) % 7
+          : monthFirst.weekday % 7;
 
   static DateTime _sameDayIn(DateTime date, int year, int month) {
     final lastDay = DateTime(year, month + 1, 0).day;
@@ -176,8 +188,8 @@ class _CalendarPageState extends State<CalendarPage> {
       case CalendarView.year:
         natural = width * 3 / 4; // 4 列 3 行
       case CalendarView.month:
-        final first =
-            DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday % 7;
+        final first = _firstWeekdayOffset(
+            DateTime(_focusedMonth.year, _focusedMonth.month, 1));
         final days =
             DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
         // 格子高度取宽度的 0.62 倍而不是正方形：正方形网格在手机上会吃掉
@@ -348,7 +360,7 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
-  // ---------- 头部（月份/年份 + 视图名 + 箭头） ----------
+  // ---------- 头部（月份/年份 + 视图名 + 箭头 + 设置） ----------
 
   Widget _buildHeader() {
     final l10n = AppLocalizations.of(context)!;
@@ -356,8 +368,10 @@ class _CalendarPageState extends State<CalendarPage> {
       CalendarView.year => l10n.calYearTitle(_focusedMonth.year),
       _ => _monthTitle(_focusedMonth),
     };
+    // 左右各一簇：< > 贴着标题走，⚙ 靠最右单独一列——翻页是高频操作，
+    // 该离标题近；设置是低频入口，放角落里也不容易误点。
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
       child: Row(
         children: [
           IconButton(
@@ -391,10 +405,104 @@ class _CalendarPageState extends State<CalendarPage> {
             tooltip: l10n.calNext(_viewTag(l10n)),
             onPressed: () => _goNext(),
           ),
+          const SizedBox(width: 4),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: l10n.calSettings,
+            onPressed: _openDisplaySettings,
+          ),
         ],
       ),
     );
   }
+
+  /// 日历显示设置：格子小字档位 + 周起始日，改完即时生效。
+  Future<void> _openDisplaySettings() async {
+    final l10n = AppLocalizations.of(context)!;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(l10n.calSettings,
+                    style: Theme.of(ctx).textTheme.titleMedium),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(l10n.calCellLabelTitle,
+                    style: Theme.of(ctx).textTheme.labelMedium
+                        ?.copyWith(color: Theme.of(ctx).hintColor)),
+              ),
+              RadioGroup<CellLabelMode>(
+                groupValue: CalendarPrefs.cellLabelMode,
+                onChanged: (v) async {
+                  if (v == null) return;
+                  await CalendarPrefs.setCellLabelMode(v);
+                  if (ctx.mounted) setSheetState(() {});
+                  // 换档影响整页格子小字，重建整个日历页。
+                  if (mounted) setState(() {});
+                },
+                child: Column(
+                  children: [
+                    for (final mode in CellLabelMode.values)
+                      RadioListTile<CellLabelMode>(
+                        dense: true,
+                        title: Text(_cellLabelModeLabel(l10n, mode)),
+                        value: mode,
+                      ),
+                  ],
+                ),
+              ),
+              const Divider(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(l10n.calWeekStartTitle,
+                    style: Theme.of(ctx).textTheme.labelMedium
+                        ?.copyWith(color: Theme.of(ctx).hintColor)),
+              ),
+              RadioGroup<bool>(
+                groupValue: CalendarPrefs.weekStartMonday,
+                onChanged: (v) async {
+                  await CalendarPrefs.setWeekStartMonday(v ?? false);
+                  if (ctx.mounted) setSheetState(() {});
+                  if (mounted) setState(() {});
+                },
+                child: Column(
+                  children: [
+                    RadioListTile<bool>(
+                      dense: true,
+                      title: Text(l10n.calWeekStartSunday),
+                      value: false,
+                    ),
+                    RadioListTile<bool>(
+                      dense: true,
+                      title: Text(l10n.calWeekStartMonday),
+                      value: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static String _cellLabelModeLabel(AppLocalizations l10n, CellLabelMode mode) =>
+      switch (mode) {
+        CellLabelMode.jieqiLunar => l10n.calCellJieqiLunar,
+        CellLabelMode.full => l10n.calCellFull,
+        CellLabelMode.lunarOnly => l10n.calCellLunarOnly,
+        CellLabelMode.hidden => l10n.calCellHidden,
+      };
 
   void _goPrev() {
     switch (_view) {
@@ -434,7 +542,11 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Widget _buildWeekDays() {
     // 表头单字：中文「日一二三四五六」，英文窄首字母「SMTWTFS」。
-    final header = AppLocalizations.of(context)!.calWeekHeader.split('');
+    // 周一起始时整体左旋一位（「一二三四五六日」/「MTWTFSS」）。
+    final raw = AppLocalizations.of(context)!.calWeekHeader;
+    final header =
+        (CalendarPrefs.weekStartMonday ? raw.substring(1) + raw[0] : raw)
+            .split('');
     return Row(
       children: [
         for (final w in header)
@@ -508,8 +620,8 @@ class _CalendarPageState extends State<CalendarPage> {
   // ---------- 月视图：网格拉伸填满给定高度（不滚动，避免抢手势） ----------
 
   Widget _buildMonthGrid(double width, double height) {
-    final first =
-        DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday % 7;
+    final first = _firstWeekdayOffset(
+        DateTime(_focusedMonth.year, _focusedMonth.month, 1));
     final days =
         DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
     final rows = (first + days + 6) ~/ 7;
@@ -560,12 +672,31 @@ class _CalendarPageState extends State<CalendarPage> {
 
     // ---------- 网格/日程里的单日单元 ----------
 
+  /// 格子小字，按 [CalendarPrefs.cellLabelMode] 档位取内容。
+  ///
+  /// 默认档（节气+农历日）刻意不看节日：节日名在窄格子里既挤数字，
+  /// 又五颜六色抢注意力；要看节日切「完整」档或节日节气页。
+  String _cellText(DayInfo info) => switch (CalendarPrefs.cellLabelMode) {
+        CellLabelMode.full => info.cellLabel,
+        CellLabelMode.jieqiLunar =>
+          info.hasJieQi ? info.jieQi : info.lunarDayText,
+        CellLabelMode.lunarOnly => info.lunarDayText,
+        CellLabelMode.hidden => '',
+      };
+
   Widget _buildDayItem(DateTime date,
       {bool compact = false, bool showWeekday = false}) {
     final info = DayInfo.of(date);
     final isSelected = _isSameDay(date, _selectedDate);
     final isToday = _isSameDay(date, _today);
     final scheme = Theme.of(context).colorScheme;
+    // 小字内容与着色跟着档位走：默认档只让节气亮色，节日不再抢镜。
+    final cellText = _cellText(info);
+    final cellHighlight = switch (CalendarPrefs.cellLabelMode) {
+      CellLabelMode.full => info.hasFestival || info.hasJieQi,
+      CellLabelMode.jieqiLunar => info.hasJieQi,
+      _ => false,
+    };
 
     Widget label(String text, TextStyle? base, {Color? color}) => FittedBox(
           fit: BoxFit.scaleDown,
@@ -619,13 +750,13 @@ class _CalendarPageState extends State<CalendarPage> {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  info.cellLabel,
+                  cellText,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: isSelected
                             ? scheme.onPrimary
-                            : (info.hasFestival || info.hasJieQi)
+                            : cellHighlight
                                 ? scheme.primary
                                 : Theme.of(context).hintColor,
                       ),
@@ -654,7 +785,10 @@ class _CalendarPageState extends State<CalendarPage> {
         Text('${info.weekText} · ${info.lunarDayText}', style: textTheme.bodyMedium),
         const Divider(height: 16),
       ],
-      _detailRow(l10n.calFestival, info.festivalText),
+      // 「节日」行与底部汇总只在「完整」档出现——默认档的日历只讲历法，
+      // 不列节日（要看节日去节日节气页）。
+      if (CalendarPrefs.cellLabelMode == CellLabelMode.full)
+        _detailRow(l10n.calFestival, info.festivalText),
       _detailRow(l10n.mainJieQi, info.jieQiText),
       // 农历/干支/生肖是中华文化数据本身，保持中文原样，只有标签跟界面语言。
       _detailRow(
@@ -665,7 +799,8 @@ class _CalendarPageState extends State<CalendarPage> {
       _detailRow(l10n.mainGanZhi, info.ganZhiText),
       _detailRow(l10n.mainZodiac, info.lunar.getYearShengXiao()),
       _detailRow(l10n.calDistance, _distanceText(date)),
-      if (info.hasFestival || info.hasJieQi)
+      if (CalendarPrefs.cellLabelMode == CellLabelMode.full &&
+          (info.hasFestival || info.hasJieQi))
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
