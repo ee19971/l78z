@@ -18,7 +18,7 @@ class OnThisDayEntry {
   /// 年份。**负数表示公元前**（维基数据原生如此）。
   final int year;
 
-  /// 中文描述。
+  /// 条目描述文本（英文界面下来自英文维基的英文原文）。
   final String text;
 
   /// 年份展示：公元前显示「前221」/「221 BC」，公元直接显示年份数字。
@@ -51,6 +51,9 @@ class OnThisDaySection {
 
 /// 资源文件路径——与 assets 声明保持一致。
 const String kOnThisDayAssetPath = 'assets/onthisday/onthisday.json';
+
+/// 英文数据路径：构建期从英文维基抓的同结构表，英文界面走这份。
+const String kOnThisDayAssetPathEn = 'assets/onthisday/onthisday_en.json';
 
 /// 日期 → 表键，如 `02-03`、`12-31`。**必须补零**，否则一位数月份查不到。
 String onThisDayKey(DateTime date) =>
@@ -89,17 +92,32 @@ List<OnThisDayEntry> _entries(Object? value) {
   ];
 }
 
-/// 解析后的全表缓存：5MB 的 JSON 只解一次，之后所有页面共享。
-Map<String, OnThisDaySection>? _cached;
+/// 解析后的全表缓存：中文 5MB + 英文 11MB 各解一次，之后所有页面共享。
+final Map<String, Map<String, OnThisDaySection>> _cached = {};
 
 /// 从 assets 加载全表（366 天）。已有缓存时立即返回，不再 IO。
-Future<Map<String, OnThisDaySection>> loadOnThisDay() async {
-  final hit = _cached;
+///
+/// [lang] 只认前缀：`en` 走英文维基数据，其余（含 `zh`、`zh_CN`）走中文。
+/// 英文资产缺失或损坏时回退中文表——宁可显示中文也不让页面白屏。
+Future<Map<String, OnThisDaySection>> loadOnThisDay({String lang = 'zh'}) async {
+  final key = lang.startsWith('en') ? 'en' : 'zh';
+  final hit = _cached[key];
   if (hit != null) return hit;
-  final source = await rootBundle.loadString(kOnThisDayAssetPath);
-  final parsed = parseOnThisDayJson(source);
-  _cached = parsed;
-  return parsed;
+  try {
+    final source = await rootBundle.loadString(
+      key == 'en' ? kOnThisDayAssetPathEn : kOnThisDayAssetPath,
+    );
+    final parsed = parseOnThisDayJson(source);
+    _cached[key] = parsed;
+    return parsed;
+  } catch (_) {
+    if (key != 'zh') {
+      // 英文数据不可用：换中文表，并把中文结果缓存到 zh 桶，
+      // 不占用 en 桶——下次英文请求仍会重试英文资产（如热更新后）。
+      return loadOnThisDay(lang: 'zh');
+    }
+    rethrow;
+  }
 }
 
 /// 按日期查表。平年的 02-29 等没有数据的日子返回 null，

@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import 'festival_names.dart';
 import 'festival_prefs.dart';
 import 'festival_scan.dart';
 import 'festival_settings_page.dart';
@@ -70,7 +71,11 @@ class _FestivalsPageState extends State<FestivalsPage> {
     final q = _query?.trim();
     return all.where((e) {
       if (FestivalPrefs.hidden.contains(e.name)) return false;
-      if (q != null && q.isNotEmpty && !e.name.contains(q)) return false;
+      if (q != null && q.isNotEmpty && !e.name.contains(q) &&
+          // 英文界面下也允许直接搜译名，如「Spring Festival」。
+          !nameEn(e.name).toLowerCase().contains(q.toLowerCase())) {
+        return false;
+      }
       return true;
     }).toList();
   }
@@ -107,7 +112,7 @@ class _FestivalsPageState extends State<FestivalsPage> {
                     children: [
                       Flexible(
                         child: Text(
-                          item.name,
+                          nameLabel(item.name, AppLocalizations.of(context)!),
                           style: theme.textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.w600),
                           overflow: TextOverflow.ellipsis,

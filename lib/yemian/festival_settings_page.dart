@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import 'festival_names.dart';
 import 'festival_prefs.dart';
 import 'festival_scan.dart';
 
@@ -172,6 +173,7 @@ class _FestivalHiddenPageState extends State<FestivalHiddenPage> {
 
   Widget _groupHeader(String title, List<String> names) {
     if (names.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -188,7 +190,9 @@ class _FestivalHiddenPageState extends State<FestivalHiddenPage> {
         for (final name in names)
           SwitchListTile(
             dense: true,
-            title: Text(name),
+            // 名单里存的是中文名（emoji 表、隐藏名单都以它为键），
+            // 只在显示时换成译名。
+            title: Text(nameLabel(name, l10n)),
             value: !FestivalPrefs.hidden.contains(name),
             onChanged: (v) async {
               // v = 是否显示；隐藏即把 v 取反写进名单。

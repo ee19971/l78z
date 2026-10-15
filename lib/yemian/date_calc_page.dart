@@ -63,11 +63,11 @@ class _DateCalcPageState extends State<DateCalcPage>
       return '${DateFormat.yMMMd(loc).format(date)} '
           '${DateFormat.EEEE(loc).format(date)}';
     }
-    // 农历数据本身是中文，只有前缀标签跟随界面语言。
+    // 农历数据本身是中文，只有前缀标签和星期跟随界面语言。
     final l = info.lunar;
     return '${AppLocalizations.of(context)!.calcLunar}'
         '${l.getYearInChinese()}年${l.getMonthInChinese()}'
-        '${l.getDayInChinese()} ${info.weekText}';
+        '${l.getDayInChinese()} ${DateFormat.EEEE(loc).format(date)}';
   }
 
   /// 补上未填的输入框，空串和非法字符都当成 0。

@@ -685,6 +685,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calWeekStartMonday => 'Monday';
 
   @override
+  String get calOtherCalendarsTitle => 'Other calendars';
+
+  @override
+  String get calTao => 'Taoist calendar';
+
+  @override
+  String get calFoto => 'Buddhist calendar';
+
+  @override
+  String get commonNone => 'None';
+
+  @override
   String get scanTitlePair => 'Pair by QR';
 
   @override

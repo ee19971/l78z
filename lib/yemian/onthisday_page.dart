@@ -2,7 +2,7 @@
 //创建时间: 2026年 10月 13日
 //RustRover: l78z
 //作用: 「历史上的今天」页面——大事记 / 今天出生 / 今天逝世 三个分区，
-//      数据来自内置的维基百科周年纪念日表（assets/onthisday/onthisday.json）。
+//      数据来自内置的维基周年纪念日表（中文 onthisday.json，英文 onthisday_en.json）。
 
 //Copyright (c) 2026 by ee19971 3180749809@qq.com, All Rights Reserved.
 
@@ -28,8 +28,16 @@ class OnThisDayPage extends StatefulWidget {
 class _OnThisDayPageState extends State<OnThisDayPage> {
   late final DateTime _date = widget.date ?? DateTime.now();
 
-  /// 全表只解一次，之后所有页面共享（见 loadOnThisDay 的静态缓存）。
-  late final Future<Map<String, OnThisDaySection>> _future = loadOnThisDay();
+  /// 按界面语言取的全表 future；语言变了就换一份（两种语言各持一个引用）。
+  ///
+  /// 两种语言各自缓存于 loadOnThisDay 内部，这里只持有 future 引用，
+  /// 不用 setState——FutureBuilder 自己会订阅并重建。
+  final Map<String, Future<Map<String, OnThisDaySection>>> _futures = {};
+
+  Future<Map<String, OnThisDaySection>> _tableFor(BuildContext context) {
+    final lang = Localizations.localeOf(context).languageCode;
+    return _futures[lang] ??= loadOnThisDay(lang: lang);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +45,7 @@ class _OnThisDayPageState extends State<OnThisDayPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.mainOnThisDay)),
       body: FutureBuilder<Map<String, OnThisDaySection>>(
-        future: _future,
+        future: _tableFor(context),
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());

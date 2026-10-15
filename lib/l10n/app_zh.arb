@@ -377,6 +377,10 @@
   "calWeekStartTitle": "每周从",
   "calWeekStartSunday": "周日开始",
   "calWeekStartMonday": "周一开始",
+  "calOtherCalendarsTitle": "其他历法",
+  "calTao": "道历",
+  "calFoto": "佛历",
+  "commonNone": "无",
 
   "scanTitlePair": "扫码配对",
   "scanTitleOcr": "OCR 识别",

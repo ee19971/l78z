@@ -680,6 +680,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calWeekStartMonday => '周一开始';
 
   @override
+  String get calOtherCalendarsTitle => '其他历法';
+
+  @override
+  String get calTao => '道历';
+
+  @override
+  String get calFoto => '佛历';
+
+  @override
+  String get commonNone => '无';
+
+  @override
   String get scanTitlePair => '扫码配对';
 
   @override

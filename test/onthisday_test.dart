@@ -6,6 +6,7 @@
 //Copyright (c) 2026 by ee19971 3180749809@qq.com, All Rights Reserved.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:l78z/l10n/app_localizations_en.dart';
@@ -135,6 +136,44 @@ void main() {
       final a = await loadOnThisDay();
       final b = await loadOnThisDay();
       expect(identical(a, b), isTrue);
+    });
+  });
+
+  group('英文数据（assets/onthisday/onthisday_en.json）', () {
+    // 构建期才生成英文表；本地没生成时 loadOnThisDay(lang: 'en') 应回退中文，
+    // 两种情况都断言：回退不能白屏，有表则必须是真英文。
+    final hasEnAsset = File(kOnThisDayAssetPathEn).existsSync();
+
+    test('en 请求返回全表 366 天', () async {
+      final data = await loadOnThisDay(lang: 'en');
+      expect(data.length, 366,
+          reason: hasEnAsset ? '英文表应覆盖 366 天' : '缺失时应回退到中文表');
+    });
+
+    test('中英两表各自缓存，互不串实例', () async {
+      final zh = await loadOnThisDay(lang: 'zh');
+      final en = await loadOnThisDay(lang: 'en');
+      if (hasEnAsset) {
+        expect(identical(zh, en), isFalse, reason: '两种语言应各持一份表');
+      } else {
+        // 回退时 en 直接复用 zh 表，也应共享实例（不重复解析 5MB）。
+        expect(identical(zh, en), isTrue);
+      }
+    });
+
+    test('英文表内容为英文（抽验 10-13，不含中文）', () async {
+      if (!hasEnAsset) return; // 未生成时只测回退，不测内容
+      final data = await loadOnThisDay(lang: 'en');
+      final sec = sectionFor(data, DateTime(2026, 10, 13));
+      expect(sec, isNotNull);
+      expect(sec!.events, isNotEmpty);
+      expect(sec.births, isNotEmpty);
+      expect(sec.deaths, isNotEmpty);
+      final cjk = RegExp(r'[一-鿿]');
+      for (final e in [...sec.events, ...sec.births, ...sec.deaths]) {
+        expect(cjk.hasMatch(e.text), isFalse,
+            reason: '英文表里混入了中文：${e.text}');
+      }
     });
   });
 }

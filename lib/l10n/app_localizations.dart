@@ -1310,6 +1310,30 @@ abstract class AppLocalizations {
   /// **'周一开始'**
   String get calWeekStartMonday;
 
+  /// No description provided for @calOtherCalendarsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他历法'**
+  String get calOtherCalendarsTitle;
+
+  /// No description provided for @calTao.
+  ///
+  /// In zh, this message translates to:
+  /// **'道历'**
+  String get calTao;
+
+  /// No description provided for @calFoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'佛历'**
+  String get calFoto;
+
+  /// No description provided for @commonNone.
+  ///
+  /// In zh, this message translates to:
+  /// **'无'**
+  String get commonNone;
+
   /// No description provided for @scanTitlePair.
   ///
   /// In zh, this message translates to:

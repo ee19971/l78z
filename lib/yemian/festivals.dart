@@ -90,11 +90,8 @@ class DayInfo {
   bool get hasFestival => festivals.isNotEmpty;
   bool get hasJieQi => jieQi.isNotEmpty;
 
-  /// 节日列表文本
-  String get festivalText => festivals.isEmpty ? '无' : festivals.join('、');
-
-  /// 节气文本
-  String get jieQiText => jieQi.isEmpty ? '无' : jieQi;
+  // 节日/节气的展示文本不再放这里：空值「无」和英文译名都要跟界面语言走，
+  // 由 festival_names.dart 的 festivalNamesText / jieQiText 按 l10n 生成。
 
   /// 干支：如 `丙午年 丁酉月 甲子日`
   String get ganZhiText => '$yearGanZhi年 $monthGanZhi月 $dayGanZhi日';

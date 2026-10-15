@@ -23,12 +23,20 @@ class CalendarPrefs {
 
   static const String _kCellLabelMode = 'calendar_cell_label_mode';
   static const String _kWeekStartMonday = 'calendar_week_start_monday';
+  static const String _kShowTao = 'calendar_show_tao';
+  static const String _kShowFoto = 'calendar_show_foto';
 
   /// 格子小字档位，默认节气 + 农历日。
   static CellLabelMode cellLabelMode = CellLabelMode.jieqiLunar;
 
   /// 周起始日是否为周一；默认周日。
   static bool weekStartMonday = false;
+
+  /// 详情面板是否显示道历行；默认关，想看再开。
+  static bool showTao = false;
+
+  /// 详情面板是否显示佛历行；默认关。
+  static bool showFoto = false;
 
   /// 首屏读一次；脏值一律回落默认。
   static Future<void> load() async {
@@ -40,6 +48,8 @@ class CalendarPrefs {
       _ => CellLabelMode.jieqiLunar,
     };
     weekStartMonday = sp.getBool(_kWeekStartMonday) ?? false;
+    showTao = sp.getBool(_kShowTao) ?? false;
+    showFoto = sp.getBool(_kShowFoto) ?? false;
   }
 
   static Future<void> setCellLabelMode(CellLabelMode mode) async {
@@ -52,5 +62,17 @@ class CalendarPrefs {
     weekStartMonday = value;
     final sp = await SharedPreferences.getInstance();
     await sp.setBool(_kWeekStartMonday, value);
+  }
+
+  static Future<void> setShowTao(bool value) async {
+    showTao = value;
+    final sp = await SharedPreferences.getInstance();
+    await sp.setBool(_kShowTao, value);
+  }
+
+  static Future<void> setShowFoto(bool value) async {
+    showFoto = value;
+    final sp = await SharedPreferences.getInstance();
+    await sp.setBool(_kShowFoto, value);
   }
 }

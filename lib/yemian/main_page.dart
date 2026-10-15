@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import 'app_settings.dart';
 import 'city_picker.dart';
+import 'festival_names.dart';
 import 'festival_prefs.dart';
 import 'festival_scan.dart';
 import 'festivals.dart';
@@ -314,7 +315,7 @@ class _TodayCard extends StatelessWidget {
                 '${lunar.getMonthInChinese()}${info.lunarDayText}'),
             _row(context, l10n.mainGanZhi, info.ganZhiText),
             _row(context, l10n.mainZodiac, lunar.getYearShengXiao()),
-            _row(context, l10n.mainJieQi, info.jieQiText),
+            _row(context, l10n.mainJieQi, jieQiText(info.jieQi, l10n)),
             if (next != null) ...[
               const Divider(height: 20),
               Row(
@@ -323,7 +324,8 @@ class _TodayCard extends StatelessWidget {
                     child: Text.rich(
                       TextSpan(children: [
                         TextSpan(
-                            text: l10n.mainNextFestival(next!.name),
+                            text: l10n.mainNextFestival(
+                                nameLabel(next!.name, l10n)),
                             style: theme.textTheme.bodyMedium),
                         if (FestivalPrefs.showEmoji)
                           TextSpan(text: ' ${festivalEmoji(next!)}'),

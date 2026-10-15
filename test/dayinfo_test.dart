@@ -88,4 +88,56 @@ void main() {
 
     expect(find.text('元旦节'), findsNWidgets(3));
   });
+
+  testWidgets('其他历法开关：默认关一行不显，开了追加道历/佛历行', (tester) async {
+    // 默认关：详情栏里没有道历/佛历两个标签。
+    SharedPreferences.setMockInitialValues({});
+    await CalendarPrefs.load();
+    addTearDown(() async {
+      CalendarPrefs.showTao = false;
+      CalendarPrefs.showFoto = false;
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh', 'CN'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: CalendarPage()),
+      ),
+    );
+    expect(find.text('道历'), findsNothing);
+    expect(find.text('佛历'), findsNothing);
+
+    // 打开两个开关：详情栏各多一行，值形如 `道历 4723年九月初九`。
+    // 注意 CalendarPage 的 initState 会异步 CalendarPrefs.load() 覆盖内存值，
+    // 所以这里走 SharedPreferences 落盘值，而不是直接改静态字段。
+    SharedPreferences.setMockInitialValues({
+      'calendar_show_tao': true,
+      'calendar_show_foto': true,
+    });
+    await CalendarPrefs.load();
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh', 'CN'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: CalendarPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('道历'), findsOneWidget);
+    expect(find.text('佛历'), findsOneWidget);
+    // 道历年号（公历年 + 2697）与佛历年号（公历年 + 543）都应出现在行里。
+    expect(
+      find.textContaining(RegExp(r'^47\d{2}年')),
+      findsOneWidget,
+      reason: '道历年份应为 4700 段',
+    );
+    expect(
+      find.textContaining(RegExp(r'^25\d{2}年')),
+      findsOneWidget,
+      reason: '佛历年份应为 2500 段',
+    );
+  });
 }

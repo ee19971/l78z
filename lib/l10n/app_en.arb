@@ -377,6 +377,10 @@
   "calWeekStartTitle": "Week starts on",
   "calWeekStartSunday": "Sunday",
   "calWeekStartMonday": "Monday",
+  "calOtherCalendarsTitle": "Other calendars",
+  "calTao": "Taoist calendar",
+  "calFoto": "Buddhist calendar",
+  "commonNone": "None",
 
   "scanTitlePair": "Pair by QR",
   "scanTitleOcr": "OCR Scan",

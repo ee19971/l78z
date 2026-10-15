@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lunar/lunar.dart';
 
 import '../l10n/app_localizations.dart';
 import 'calendar_prefs.dart';
+import 'festival_names.dart';
 import 'festivals.dart';
 
 /// 视图层级：年 > 月 > 周 > 日
@@ -424,7 +426,9 @@ class _CalendarPageState extends State<CalendarPage> {
       showDragHandle: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => SafeArea(
-          child: Column(
+          // 选项加到 9 项后小屏会顶出屏幕：整列可滚，永不溢出。
+          child: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -488,8 +492,37 @@ class _CalendarPageState extends State<CalendarPage> {
                   ],
                 ),
               ),
+              const Divider(height: 16),
+              // 其他历法：道历/佛历按需勾选，勾上才在详情面板多显示一行。
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(l10n.calOtherCalendarsTitle,
+                    style: Theme.of(ctx).textTheme.labelMedium
+                        ?.copyWith(color: Theme.of(ctx).hintColor)),
+              ),
+              SwitchListTile(
+                dense: true,
+                title: Text(l10n.calTao),
+                value: CalendarPrefs.showTao,
+                onChanged: (v) async {
+                  await CalendarPrefs.setShowTao(v);
+                  if (ctx.mounted) setSheetState(() {});
+                  if (mounted) setState(() {});
+                },
+              ),
+              SwitchListTile(
+                dense: true,
+                title: Text(l10n.calFoto),
+                value: CalendarPrefs.showFoto,
+                onChanged: (v) async {
+                  await CalendarPrefs.setShowFoto(v);
+                  if (ctx.mounted) setSheetState(() {});
+                  if (mounted) setState(() {});
+                },
+              ),
               const SizedBox(height: 8),
             ],
+            ),
           ),
         ),
       ),
@@ -676,10 +709,14 @@ class _CalendarPageState extends State<CalendarPage> {
   ///
   /// 默认档（节气+农历日）刻意不看节日：节日名在窄格子里既挤数字，
   /// 又五颜六色抢注意力；要看节日切「完整」档或节日节气页。
-  String _cellText(DayInfo info) => switch (CalendarPrefs.cellLabelMode) {
-        CellLabelMode.full => info.cellLabel,
-        CellLabelMode.jieqiLunar =>
-          info.hasJieQi ? info.jieQi : info.lunarDayText,
+  ///
+  /// 英文界面下节日/节气名换成译名；农历日（初一）查不到译名自然回落中文。
+  String _cellText(DayInfo info, AppLocalizations l10n) =>
+      switch (CalendarPrefs.cellLabelMode) {
+        CellLabelMode.full => nameLabel(info.cellLabel, l10n),
+        CellLabelMode.jieqiLunar => info.hasJieQi
+            ? nameLabel(info.jieQi, l10n)
+            : info.lunarDayText,
         CellLabelMode.lunarOnly => info.lunarDayText,
         CellLabelMode.hidden => '',
       };
@@ -691,7 +728,7 @@ class _CalendarPageState extends State<CalendarPage> {
     final isToday = _isSameDay(date, _today);
     final scheme = Theme.of(context).colorScheme;
     // 小字内容与着色跟着档位走：默认档只让节气亮色，节日不再抢镜。
-    final cellText = _cellText(info);
+    final cellText = _cellText(info, AppLocalizations.of(context)!);
     final cellHighlight = switch (CalendarPrefs.cellLabelMode) {
       CellLabelMode.full => info.hasFestival || info.hasJieQi,
       CellLabelMode.jieqiLunar => info.hasJieQi,
@@ -732,7 +769,10 @@ class _CalendarPageState extends State<CalendarPage> {
           children: [
             if (showWeekday)
               label(
-                info.weekText,
+                // 星期跟界面语言走（英文界面「Saturday」），数据层的
+                // info.weekText 是中文星期，留给纯中文语境用。
+                DateFormat.EEEE(Localizations.localeOf(context).toString())
+                    .format(date),
                 Theme.of(context).textTheme.labelSmall,
                 color: isSelected ? scheme.onPrimary : Theme.of(context).hintColor,
               ),
@@ -782,14 +822,16 @@ class _CalendarPageState extends State<CalendarPage> {
       if (showDate) ...[
         Text(_dateFormat.format(date), style: textTheme.titleMedium),
         const SizedBox(height: 2),
-        Text('${info.weekText} · ${info.lunarDayText}', style: textTheme.bodyMedium),
+        Text(
+            '${DateFormat.EEEE(Localizations.localeOf(context).toString()).format(date)} · ${info.lunarDayText}',
+            style: textTheme.bodyMedium),
         const Divider(height: 16),
       ],
       // 「节日」行与底部汇总只在「完整」档出现——默认档的日历只讲历法，
       // 不列节日（要看节日去节日节气页）。
       if (CalendarPrefs.cellLabelMode == CellLabelMode.full)
-        _detailRow(l10n.calFestival, info.festivalText),
-      _detailRow(l10n.mainJieQi, info.jieQiText),
+        _detailRow(l10n.calFestival, festivalNamesText(info.festivals, l10n)),
+      _detailRow(l10n.mainJieQi, jieQiText(info.jieQi, l10n)),
       // 农历/干支/生肖是中华文化数据本身，保持中文原样，只有标签跟界面语言。
       _detailRow(
         l10n.mainLunar,
@@ -798,13 +840,20 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
       _detailRow(l10n.mainGanZhi, info.ganZhiText),
       _detailRow(l10n.mainZodiac, info.lunar.getYearShengXiao()),
+      // 其他历法（道历/佛历）按设置开关逐行追加，关着就一行都不占地方。
+      if (CalendarPrefs.showTao)
+        _detailRow(l10n.calTao, _otherCalendarText(info, isTao: true)),
+      if (CalendarPrefs.showFoto)
+        _detailRow(l10n.calFoto, _otherCalendarText(info, isTao: false)),
       _detailRow(l10n.calDistance, _distanceText(date)),
       if (CalendarPrefs.cellLabelMode == CellLabelMode.full &&
           (info.hasFestival || info.hasJieQi))
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
-            [...info.festivals, if (info.hasJieQi) info.jieQi].join(' · '),
+            [...info.festivals, if (info.hasJieQi) info.jieQi]
+                .map((n) => nameLabel(n, l10n))
+                .join(' · '),
             style: textTheme.bodySmall?.copyWith(color: scheme.primary),
           ),
         ),
@@ -819,6 +868,20 @@ class _CalendarPageState extends State<CalendarPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(padding: const EdgeInsets.all(16), child: Column(children: rows)),
     );
+  }
+
+  /// 其他历法（道历/佛历）的整行文本，如 `道历 4723年九月初九`。
+  ///
+  /// 两者都由农历换算而来（`Tao.fromLunar` / `Foto.fromLunar`），
+  /// 年份用公历数字好读，月日沿用农历中文——和上面的农历行口径一致。
+  String _otherCalendarText(DayInfo info, {required bool isTao}) {
+    final lunar = info.lunar;
+    if (isTao) {
+      final tao = Tao.fromLunar(lunar);
+      return '${tao.getYear()}年${tao.getMonthInChinese()}${tao.getDayInChinese()}';
+    }
+    final foto = Foto.fromLunar(lunar);
+    return '${foto.getYear()}年${foto.getMonthInChinese()}${foto.getDayInChinese()}';
   }
 
   /// 某个日期距今天多少天；用日历天差，不看时区和小时。
