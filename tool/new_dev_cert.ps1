@@ -24,3 +24,9 @@ $secPwd = ConvertTo-SecureString -String $pwdText -Force -AsPlainText
 $pfxPath = Join-Path $certDir 'l78z-dev.pfx'
 Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password $secPwd | Out-Null
 Write-Host "已生成 $pfxPath"
+
+# msix 打包会查询 Cert:\CurrentUser\Root 是否已有同 Subject 证书，没有就弹
+# 「是否安装证书」交互提示——CI 无 TTY 读到 null 直接崩。这里主动导入
+# CurrentUser\Root（用户级存储，无需管理员，重复导入幂等），本地与 CI 一致。
+Import-PfxCertificate -FilePath $pfxPath -Password $secPwd -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
+Write-Host "已导入 CurrentUser\Root（msix 签名免交互）"
