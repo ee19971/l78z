@@ -118,6 +118,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<OcrBlock> dco_decode_list_ocr_block(dynamic raw);
 
   @protected
+  List<OcrModelAsset> dco_decode_list_ocr_model_asset(dynamic raw);
+
+  @protected
   Float32List dco_decode_list_prim_f_32_strict(dynamic raw);
 
   @protected
@@ -137,6 +140,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   OcrBlock dco_decode_ocr_block(dynamic raw);
+
+  @protected
+  OcrModelAsset dco_decode_ocr_model_asset(dynamic raw);
 
   @protected
   OcrStatus dco_decode_ocr_status(dynamic raw);
@@ -274,6 +280,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<OcrBlock> sse_decode_list_ocr_block(SseDeserializer deserializer);
 
   @protected
+  List<OcrModelAsset> sse_decode_list_ocr_model_asset(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   Float32List sse_decode_list_prim_f_32_strict(SseDeserializer deserializer);
 
   @protected
@@ -293,6 +304,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   OcrBlock sse_decode_ocr_block(SseDeserializer deserializer);
+
+  @protected
+  OcrModelAsset sse_decode_ocr_model_asset(SseDeserializer deserializer);
 
   @protected
   OcrStatus sse_decode_ocr_status(SseDeserializer deserializer);
@@ -460,6 +474,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_ocr_block(List<OcrBlock> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_ocr_model_asset(
+    List<OcrModelAsset> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_prim_f_32_strict(
     Float32List self,
     SseSerializer serializer,
@@ -485,6 +505,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_ocr_block(OcrBlock self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_ocr_model_asset(OcrModelAsset self, SseSerializer serializer);
 
   @protected
   void sse_encode_ocr_status(OcrStatus self, SseSerializer serializer);

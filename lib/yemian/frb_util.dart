@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../src/rust/api/config.dart';
 import '../src/rust/api/transfer.dart';
+import 'ocr_download.dart';
 
 /// 应用配置文件路径。
 ///
@@ -76,57 +77,32 @@ Future<RgbaImage> decodeRgbaBytes(Uint8List bytes) async {
   );
 }
 
-/// 各模型文件在 assets 中的字节数，用来把解包进度折算成百分比。
+/// 传给 Rust 的 OCR 模型目录：固定为应用文档目录下的 l78z_ocr。
 ///
-/// assets 更新后这里要同步。失配也不会出错，只是进度条提前/滞后，
-/// 结束时总会落到 1.0。
-const Map<String, int> _ocrAssetSizes = {
-  'PP-OCRv6_det_medium.onnx': 62119454,
-  'PP-OCRv6_rec_medium.onnx': 76629984,
-  'ch_ppocr_mobile_v2.0_cls_mobile.onnx': 585532,
-  'ppocrv6_dict.txt': 74947,
-};
-
-/// 传给 Rust 的 OCR 模型目录：
-/// 桌面端直接用 flutter_assets 里的真实文件；移动端解包到文档目录。
+/// 随包的小文件（字典 + 分类模型）在这里解包；两个大 onnx 不进安装包，
+/// 由调用方用 `missingOcrAssets` 检查、征求用户同意后联网下载
+/// （见 ocr_download.dart，字节数表也移过去了）。
 ///
-/// [onProgress] 会收到 0.0~1.0 的解包进度。首次要往手机里写约 140MB，
-/// 中途没有任何反馈的话看起来就像卡死了。
+/// [onProgress] 收到 0.0~1.0 的解包进度。小文件总量不到 1MB，进度
+/// 一闪而过；真正的下载进度由 scan_page 单独呈现。
 Future<String> ensureOcrModelDir({
   void Function(double progress)? onProgress,
 }) async {
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    final sep = Platform.pathSeparator;
-    final exeDir = File(Platform.resolvedExecutable).parent.path;
-    final candidates = [
-      '$exeDir${sep}data${sep}flutter_assets${sep}assets${sep}ocr',
-      '$exeDir${sep}flutter_assets${sep}assets${sep}ocr',
-      '$exeDir${sep}flutter_assets${sep}ocr',
-    ];
-    for (final dir in candidates) {
-      if (await File('$dir${sep}ppocrv6_dict.txt').exists()) {
-        onProgress?.call(1.0);
-        return dir;
-      }
-    }
-    onProgress?.call(1.0);
-    return candidates.first;
-  }
   final docs = await getApplicationDocumentsDirectory();
   final dir = Directory('${docs.path}/l78z_ocr');
   await dir.create(recursive: true);
 
-  final names = _ocrAssetSizes.keys.toList();
-  final total = _ocrAssetSizes.values.fold<int>(0, (a, b) => a + b);
+  final total = ocrBundledAssets.fold<int>(0, (a, n) => a + ocrAssetSizes[n]!);
   var done = 0;
 
-  for (final name in names) {
+  for (final name in ocrBundledAssets) {
     final f = File('${dir.path}/$name');
-    //已存在且非空就跳过。注意必须先写 .part 再改名：
-    //直接写目标文件时，应用中途被杀会留下半截文件，
-    //下次又因为「已存在」被跳过，之后 Rust 每次都会加载到损坏的模型。
-    if (await f.exists() && await f.length() > 0) {
-      done += _ocrAssetSizes[name]!;
+    // 已存在且长度一致才跳过，长度不对当场重解（半截文件不能留）。
+    // 注意必须先写 .part 再改名：
+    // 直接写目标文件时，应用中途被杀会留下半截文件，
+    // 下次又因为「已存在」被跳过，之后 Rust 每次都会加载到损坏的模型。
+    if (await f.exists() && await f.length() == ocrAssetSizes[name]) {
+      done += ocrAssetSizes[name]!;
       onProgress?.call((done / total).clamp(0.0, 1.0));
       continue;
     }

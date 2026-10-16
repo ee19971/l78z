@@ -719,7 +719,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scanStageRead => '读取图片';
 
   @override
-  String get scanStagePrepareModel => '准备 OCR 模型（首次约 140MB）';
+  String get scanStagePrepareModel => '准备识别模型';
+
+  @override
+  String get scanStageDownloadModel => '下载识别模型（首次约 132MB）';
 
   @override
   String get scanStageRecognizing => '正在识别文字';
@@ -732,6 +735,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get scanStageDecoded => '解码完成';
+
+  @override
+  String get scanModelDownloadTitle => '下载识别模型';
+
+  @override
+  String scanModelDownloadBody(int size) {
+    return '识别文字需先下载模型文件（约 ${size}MB，仅首次需要），下载后识别全程离线。建议在 Wi-Fi 下进行。';
+  }
+
+  @override
+  String get scanModelDownloadAction => '开始下载';
+
+  @override
+  String scanModelDownloadFailed(String error) {
+    return '模型下载失败：$error';
+  }
 
   @override
   String scanFailed(String stage, String error) {

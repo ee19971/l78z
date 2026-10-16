@@ -1391,8 +1391,14 @@ abstract class AppLocalizations {
   /// No description provided for @scanStagePrepareModel.
   ///
   /// In zh, this message translates to:
-  /// **'准备 OCR 模型（首次约 140MB）'**
+  /// **'准备识别模型'**
   String get scanStagePrepareModel;
+
+  /// No description provided for @scanStageDownloadModel.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载识别模型（首次约 132MB）'**
+  String get scanStageDownloadModel;
 
   /// No description provided for @scanStageRecognizing.
   ///
@@ -1417,6 +1423,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'解码完成'**
   String get scanStageDecoded;
+
+  /// No description provided for @scanModelDownloadTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载识别模型'**
+  String get scanModelDownloadTitle;
+
+  /// No description provided for @scanModelDownloadBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'识别文字需先下载模型文件（约 {size}MB，仅首次需要），下载后识别全程离线。建议在 Wi-Fi 下进行。'**
+  String scanModelDownloadBody(int size);
+
+  /// No description provided for @scanModelDownloadAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始下载'**
+  String get scanModelDownloadAction;
+
+  /// No description provided for @scanModelDownloadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'模型下载失败：{error}'**
+  String scanModelDownloadFailed(String error);
 
   /// No description provided for @scanFailed.
   ///

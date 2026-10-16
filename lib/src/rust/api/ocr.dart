@@ -8,7 +8,7 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `assert_path_used`, `engine_cell`, `load_engine`, `model_dir_checked_or_create`, `model_dir_checked`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`
 
 /// 查询模型是否齐全（不加载推理引擎）。
 Future<OcrStatus> ocrStatus({required String modelDir}) =>
@@ -17,6 +17,13 @@ Future<OcrStatus> ocrStatus({required String modelDir}) =>
 /// 下载缺失的模型文件（开发期/兜底用；走 HTTPS_PROXY 环境变量代理）。
 Future<OcrStatus> ocrDownloadModels({required String modelDir}) =>
     RustLib.instance.api.crateApiOcrOcrDownloadModels(modelDir: modelDir);
+
+/// 模型下载清单：安装包不再内置大模型文件，由 Dart 侧按此表带进度下载。
+///
+/// URL 与校验和取自 rapidocr-core 的官方常量，文件名与 `ocr_status`
+/// 检查的是同一套，Dart 下载完的文件 Rust 侧直接认。
+Future<List<OcrModelAsset>> ocrModelSpecs() =>
+    RustLib.instance.api.crateApiOcrOcrModelSpecs();
 
 /// 对 RGBA8 buffer 做 OCR。model_dir 为已解包的模型目录。
 Future<List<OcrBlock>> ocrImage({
@@ -73,6 +80,36 @@ class OcrBlock {
           text == other.text &&
           score == other.score &&
           points == other.points;
+}
+
+/// 单个模型文件的下载规格。
+class OcrModelAsset {
+  /// 落在模型目录里的文件名。
+  final String filename;
+
+  /// 下载地址（ModelScope 直链，国内可直连）。
+  final String url;
+
+  /// SHA-256 校验和，下载完成后必须核对。
+  final String sha256;
+
+  const OcrModelAsset({
+    required this.filename,
+    required this.url,
+    required this.sha256,
+  });
+
+  @override
+  int get hashCode => filename.hashCode ^ url.hashCode ^ sha256.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is OcrModelAsset &&
+          runtimeType == other.runtimeType &&
+          filename == other.filename &&
+          url == other.url &&
+          sha256 == other.sha256;
 }
 
 /// 模型就绪状态。

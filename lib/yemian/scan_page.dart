@@ -8,6 +8,7 @@ import '../src/rust/api/ocr.dart';
 import '../src/rust/api/qr.dart';
 import '../src/rust/api/transfer.dart';
 import 'frb_util.dart';
+import 'ocr_download.dart';
 
 /// 对同一张图的处理方式：只认文字，或只认码。二者互不相干。
 enum ScanMode {
@@ -220,10 +221,63 @@ class _ScanPageState extends State<ScanPage> {
           _stage = l10n.scanStagePrepareModel;
           _progress = 0.05;
         });
+        // 解包随包的小文件（不到 1MB，一闪而过），大模型另行检查。
         final modelDir = await ensureOcrModelDir(onProgress: (p) {
-          if (mounted) setState(() => _progress = 0.05 + p * 0.45);
+          if (mounted) setState(() => _progress = 0.05 + p * 0.04);
         });
         if (!mounted) return;
+
+        // 安装包不含 132MB 的大模型：首次使用先征求同意、再联网下载，
+        // 下载过一次就常驻本地。用户取消则结束本次识别。
+        final missing = await missingOcrAssets(modelDir);
+        if (!mounted) return;
+        if (missing.isNotEmpty) {
+          final totalMb =
+              missing.fold<int>(0, (a, s) => a + s.size) ~/ (1024 * 1024);
+          final go = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              title: Text(l10n.scanModelDownloadTitle),
+              content: Text(l10n.scanModelDownloadBody(totalMb)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: Text(l10n.scanModelDownloadAction),
+                ),
+              ],
+            ),
+          );
+          if (go != true) {
+            if (mounted) setState(() => _stage = '');
+            return;
+          }
+          if (!mounted) return;
+          setState(() {
+            _stage = l10n.scanStageDownloadModel;
+            _progress = 0.1;
+          });
+          try {
+            await downloadOcrAssets(
+              dir: modelDir,
+              assets: missing,
+              onProgress: (p) {
+                if (mounted) setState(() => _progress = 0.1 + p * 0.45);
+              },
+            );
+          } catch (e) {
+            // 下载和识别是两回事，不套「识别失败」模板——
+            // 用户该做的（换网络重试）也不一样。
+            if (mounted) await _snack(l10n.scanModelDownloadFailed('$e'));
+            return;
+          }
+          if (!mounted) return;
+        }
+
         setState(() {
           _stage = l10n.scanStageRecognizing;
           _progress = 0.55;

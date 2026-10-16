@@ -1,4 +1,4 @@
-﻿name: l78z
+name: l78z
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # of the product and file versions while build-number is used as the build suffix.
 # 用户看到的版本号。build 号必须单调递增——它会被当作安卓的 versionCode，
 # 改小会导致覆盖安装时报 INSTALL_FAILED_VERSION_DOWNGRADE。
-version: 3.10.0+400
+version: 4.0.0+500
 
 environment:
   sdk: ^3.13.5
@@ -55,6 +55,11 @@ dependencies:
   # 因此这个依赖已经没有引用了。
   file_picker: ^13.1.0
   path_provider: ^2.1.6
+  # OCR 大模型不进安装包，首次使用时联网下载（ModelScope 官方直链）：
+  # http 负责流式下载（进度回调 + Range 断点续传），crypto 负责
+  # SHA-256 校验——下载文件必须与 rapidocr-core 官方常量一致才可用。
+  http: ^1.2.0
+  crypto: ^3.0.6
   # 关于页的版本号来源：直接读 APK 的 versionName，不会和 pubspec.yaml 的
   # version 写岔。体积很小（约 30KB）。
   # 必须 >= 10：file_picker 13 拉的 plugin_platform_interface 版本更高，
@@ -95,7 +100,11 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/ocr/
+    # OCR 只打包小文件：字典 + 分类模型（约 660KB）。
+    # 两个大 onnx（det/rec，约 132MB）不进安装包，首次使用 OCR 时
+    # 联网下载到应用文档目录（见 lib/yemian/ocr_download.dart）。
+    - assets/ocr/ppocrv6_dict.txt
+    - assets/ocr/ch_ppocr_mobile_v2.0_cls_mobile.onnx
     - assets/onthisday/
 
   # 字体：Noto Sans/Serif CJK SC Regular，pyftsubset 按 GB2312 + ASCII 裁过
@@ -151,10 +160,10 @@ msix_config:
   publisher_display_name: 互传助手
   # identity_name 不要改：改了系统会当成另一个应用，无法覆盖安装。
   identity_name: com.l78z.desktop
-  # 必须与 pubspec.yaml 的 version（3.9.0+390）对齐，且四段式。
-  msix_version: 3.10.0.0
+  # 必须与 pubspec.yaml 的 version（4.0.0+500）对齐，且四段式。
+  msix_version: 4.0.0.0
   architectures:
     - x64
   certificate_path: certs/l78z-dev.pfx
   certificate_password: l78z-dev-2026
-  # 模型等大文件已在 assets 中，直接进包
+  # OCR 大模型已移出 assets（首次使用时下载），包里只有字典与分类小模型。

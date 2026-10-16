@@ -49,3 +49,9 @@ app.*.map.json
 
 # Rust 构建产物（rust/.gitignore 的 /target 在并入后仍生效，此处显式声明）
 rust/target/
+
+# OCR 大模型不进仓库（约 132MB）：应用内首次使用时从 ModelScope 下载，
+# 手动备份（蓝奏云）放到这里也不跟踪。字典与分类小模型仍正常跟踪。
+assets/ocr/PP-OCRv6_det_medium.onnx
+assets/ocr/PP-OCRv6_rec_medium.onnx
+assets/ocr/*.rar

@@ -75,7 +75,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 1145870683;
+  int get rustContentHash => 946352149;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -221,6 +221,8 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<String> crateApiOcrOcrJoinText({required List<OcrBlock> blocks});
+
+  Future<List<OcrModelAsset>> crateApiOcrOcrModelSpecs();
 
   Future<OcrStatus> crateApiOcrOcrStatus({required String modelDir});
 
@@ -1344,6 +1346,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "ocr_join_text", argNames: ["blocks"]);
 
   @override
+  Future<List<OcrModelAsset>> crateApiOcrOcrModelSpecs() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 35,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_ocr_model_asset,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiOcrOcrModelSpecsConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiOcrOcrModelSpecsConstMeta =>
+      const TaskConstMeta(debugName: "ocr_model_specs", argNames: []);
+
+  @override
   Future<OcrStatus> crateApiOcrOcrStatus({required String modelDir}) {
     return handler.executeNormal(
       NormalTask(
@@ -1353,7 +1382,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 35,
+            funcId: 36,
             port: port_,
           );
         },
@@ -1383,7 +1412,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 36,
+            funcId: 37,
             port: port_,
           );
         },
@@ -1415,7 +1444,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 37,
+            funcId: 38,
             port: port_,
           );
         },
@@ -1445,7 +1474,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 38,
+              funcId: 39,
               port: port_,
             );
           },
@@ -1481,7 +1510,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 39,
+            funcId: 40,
             port: port_,
           );
         },
@@ -1511,7 +1540,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 40,
+            funcId: 41,
             port: port_,
           );
         },
@@ -1759,6 +1788,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<OcrModelAsset> dco_decode_list_ocr_model_asset(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_ocr_model_asset).toList();
+  }
+
+  @protected
   Float32List dco_decode_list_prim_f_32_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Float32List;
@@ -1874,6 +1909,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       text: dco_decode_String(arr[0]),
       score: dco_decode_f_32(arr[1]),
       points: dco_decode_list_prim_f_32_strict(arr[2]),
+    );
+  }
+
+  @protected
+  OcrModelAsset dco_decode_ocr_model_asset(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return OcrModelAsset(
+      filename: dco_decode_String(arr[0]),
+      url: dco_decode_String(arr[1]),
+      sha256: dco_decode_String(arr[2]),
     );
   }
 
@@ -2269,6 +2317,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<OcrModelAsset> sse_decode_list_ocr_model_asset(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <OcrModelAsset>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_ocr_model_asset(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   Float32List sse_decode_list_prim_f_32_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
@@ -2406,6 +2468,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_score = sse_decode_f_32(deserializer);
     var var_points = sse_decode_list_prim_f_32_strict(deserializer);
     return OcrBlock(text: var_text, score: var_score, points: var_points);
+  }
+
+  @protected
+  OcrModelAsset sse_decode_ocr_model_asset(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_filename = sse_decode_String(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_sha256 = sse_decode_String(deserializer);
+    return OcrModelAsset(
+      filename: var_filename,
+      url: var_url,
+      sha256: var_sha256,
+    );
   }
 
   @protected
@@ -2825,6 +2900,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_ocr_model_asset(
+    List<OcrModelAsset> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_ocr_model_asset(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_prim_f_32_strict(
     Float32List self,
     SseSerializer serializer,
@@ -2952,6 +3039,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.text, serializer);
     sse_encode_f_32(self.score, serializer);
     sse_encode_list_prim_f_32_strict(self.points, serializer);
+  }
+
+  @protected
+  void sse_encode_ocr_model_asset(
+    OcrModelAsset self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.filename, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_String(self.sha256, serializer);
   }
 
   @protected

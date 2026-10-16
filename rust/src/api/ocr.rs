@@ -66,6 +66,34 @@ pub fn ocr_download_models(model_dir: String) -> anyhow::Result<OcrStatus> {
     ocr_status(model_dir)
 }
 
+/// 单个模型文件的下载规格。
+#[derive(Debug, Clone, Serialize)]
+pub struct OcrModelAsset {
+    /// 落在模型目录里的文件名。
+    pub filename: String,
+    /// 下载地址（ModelScope 直链，国内可直连）。
+    pub url: String,
+    /// SHA-256 校验和，下载完成后必须核对。
+    pub sha256: String,
+}
+
+/// 模型下载清单：安装包不再内置大模型文件，由 Dart 侧按此表带进度下载。
+///
+/// URL 与校验和取自 rapidocr-core 的官方常量，文件名与 `ocr_status`
+/// 检查的是同一套，Dart 下载完的文件 Rust 侧直接认。
+pub fn ocr_model_specs() -> Vec<OcrModelAsset> {
+    PPOCRV6_MEDIUM
+        .assets()
+        .iter()
+        .map(|a| OcrModelAsset {
+            filename: a.filename.to_string(),
+            url: a.url.to_string(),
+            // 这套模型四个文件都带校验和；真没有就留空串，Dart 侧据此跳过校验。
+            sha256: a.sha256.unwrap_or_default().to_string(),
+        })
+        .collect()
+}
+
 fn model_dir_checked_or_create(model_dir: &str) -> anyhow::Result<std::path::PathBuf> {
     let dir = std::path::PathBuf::from(model_dir);
     if !dir.exists() {

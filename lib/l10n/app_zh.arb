@@ -391,11 +391,26 @@
   "scanActionOcr": "识别文字 OCR",
   "scanActionBarcode": "扫二维码/条形码",
   "scanStageRead": "读取图片",
-  "scanStagePrepareModel": "准备 OCR 模型（首次约 140MB）",
+  "scanStagePrepareModel": "准备识别模型",
+  "scanStageDownloadModel": "下载识别模型（首次约 132MB）",
   "scanStageRecognizing": "正在识别文字",
   "scanStageDone": "识别完成",
   "scanStageDecoding": "正在解码二维码/条形码",
   "scanStageDecoded": "解码完成",
+  "scanModelDownloadTitle": "下载识别模型",
+  "scanModelDownloadBody": "识别文字需先下载模型文件（约 {size}MB，仅首次需要），下载后识别全程离线。建议在 Wi-Fi 下进行。",
+  "@scanModelDownloadBody": {
+    "placeholders": {
+      "size": { "type": "int" }
+    }
+  },
+  "scanModelDownloadAction": "开始下载",
+  "scanModelDownloadFailed": "模型下载失败：{error}",
+  "@scanModelDownloadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "scanFailed": "识别失败 · {stage}：{error}",
   "@scanFailed": {
     "placeholders": {

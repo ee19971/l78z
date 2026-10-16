@@ -724,8 +724,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanStageRead => 'Loading image';
 
   @override
-  String get scanStagePrepareModel =>
-      'Preparing OCR model (~140MB on first run)';
+  String get scanStagePrepareModel => 'Preparing OCR model';
+
+  @override
+  String get scanStageDownloadModel =>
+      'Downloading OCR model (~132MB, first time)';
 
   @override
   String get scanStageRecognizing => 'Recognizing text';
@@ -738,6 +741,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanStageDecoded => 'Decoded';
+
+  @override
+  String get scanModelDownloadTitle => 'Download OCR model';
+
+  @override
+  String scanModelDownloadBody(int size) {
+    return 'Text recognition needs a model download (~${size}MB, one time only), then everything works offline. Wi-Fi is recommended.';
+  }
+
+  @override
+  String get scanModelDownloadAction => 'Start download';
+
+  @override
+  String scanModelDownloadFailed(String error) {
+    return 'Model download failed: $error';
+  }
 
   @override
   String scanFailed(String stage, String error) {

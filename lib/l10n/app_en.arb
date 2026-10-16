@@ -391,11 +391,26 @@
   "scanActionOcr": "Recognize text (OCR)",
   "scanActionBarcode": "Scan QR / barcode",
   "scanStageRead": "Loading image",
-  "scanStagePrepareModel": "Preparing OCR model (~140MB on first run)",
+  "scanStagePrepareModel": "Preparing OCR model",
+  "scanStageDownloadModel": "Downloading OCR model (~132MB, first time)",
   "scanStageRecognizing": "Recognizing text",
   "scanStageDone": "Recognition done",
   "scanStageDecoding": "Decoding QR / barcode",
   "scanStageDecoded": "Decoded",
+  "scanModelDownloadTitle": "Download OCR model",
+  "scanModelDownloadBody": "Text recognition needs a model download (~{size}MB, one time only), then everything works offline. Wi-Fi is recommended.",
+  "@scanModelDownloadBody": {
+    "placeholders": {
+      "size": { "type": "int" }
+    }
+  },
+  "scanModelDownloadAction": "Start download",
+  "scanModelDownloadFailed": "Model download failed: {error}",
+  "@scanModelDownloadFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
   "scanFailed": "Failed at {stage}: {error}",
   "@scanFailed": {
     "placeholders": {
