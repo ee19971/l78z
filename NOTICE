@@ -20,11 +20,14 @@ Rust 生态
 
 Flutter / Dart 生态
   flutter_rust_bridge, lunar, file_picker, freezed_annotation,
-  json_annotation, package_info_plus, timezone, crypto, icu_kit,
-  cupertino_icons
+  icu_kit, cupertino_icons
   Licensed under the MIT License
 
-  path_provider, intl, shared_preferences, http
+  icu_kit 附带的 ICU4X 引擎与 CLDR 数据
+  Licensed under the Unicode License, Version 3.0
+
+  json_annotation, package_info_plus, path_provider, intl,
+  timezone, crypto, shared_preferences, http
   Licensed under the BSD-3-Clause License
 
 ---

@@ -14,16 +14,22 @@ class _Lib {
   const _Lib(this.name, this.version, this.license);
 }
 
-/// Dart / Flutter 侧依赖。版本取自 pubspec.lock 的实际锁定值。
+/// Dart / Flutter 侧依赖。版本取自 pubspec.lock 的实际锁定值，
+/// 许可证逐个与 pub cache 里的 LICENSE 文件实测核对。
 const List<_Lib> _dartLibs = [
   _Lib('flutter_rust_bridge', '2.13.0', 'MIT'),
-  _Lib('package_info_plus', '10.2.2', 'MIT'),
+  _Lib('package_info_plus', '10.2.2', 'BSD-3-Clause'),
   _Lib('file_picker', '13.1.0', 'MIT'),
   _Lib('path_provider', '2.1.6', 'BSD-3-Clause'),
   _Lib('lunar', '1.7.8', 'MIT'),
+  _Lib('icu_kit', '0.2.0', 'MIT'),
   _Lib('freezed_annotation', '3.1.0', 'MIT'),
-  _Lib('json_annotation', '4.12.0', 'MIT'),
+  _Lib('json_annotation', '4.12.0', 'BSD-3-Clause'),
   _Lib('intl', '0.20.3', 'BSD-3-Clause'),
+  _Lib('timezone', '0.9.4', 'BSD-3-Clause'),
+  _Lib('shared_preferences', '2.5.6', 'BSD-3-Clause'),
+  _Lib('http', '1.6.0', 'BSD-3-Clause'),
+  _Lib('crypto', '3.0.7', 'BSD-3-Clause'),
   _Lib('cupertino_icons', '1.0.9', 'MIT'),
 ];
 
