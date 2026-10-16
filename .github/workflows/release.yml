@@ -56,7 +56,7 @@ jobs:
         run: flutter pub get
 
       - name: 生成开发签名证书
-        run: powershell -File tool/new_dev_cert.ps1
+        run: powershell -NoProfile -File tool/new_dev_cert.ps1
 
       - name: 构建 MSIX
         run: dart run msix:create

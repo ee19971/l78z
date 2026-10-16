@@ -1,4 +1,4 @@
-# 生成 Windows MSIX 打包用的本地开发签名证书（自签）。
+﻿# 生成 Windows MSIX 打包用的本地开发签名证书（自签）。
 #
 # 证书文件 certs/l78z-dev.pfx 不入库（.gitignore 已忽略），本地首次
 # 打包与 CI 都跑这一个脚本；Subject 固定为 CN=com.l78z.desktop，
