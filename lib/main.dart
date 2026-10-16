@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:icu_kit/icu_kit.dart';
 import 'package:l78z/src/rust/frb_generated.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +10,7 @@ import 'yemian/countdown_page.dart';
 import 'yemian/date_calc_page.dart';
 import 'yemian/festivals_page.dart';
 import 'yemian/main_page.dart';
+import 'yemian/other_calendars.dart';
 import 'yemian/timezone_data.dart';
 import 'yemian/tools_page.dart';
 
@@ -20,6 +22,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await RustLib.init();
+    // icu_kit 是其他历法（伊斯兰/希伯来等）的换算引擎；它初始化失败
+    // 只是少几行历法显示，不值得让整个应用起不来，单独兜一层。
+    try {
+      await IcuKit.init();
+      icuKitReady = true;
+    } catch (e) {
+      debugPrint('IcuKit.init 失败，其他历法行不可用: $e');
+    }
     // 时区库要在主页面第一帧之前就绪，否则时钟会退化成本机时间。
     initTimezones();
     await _initAppSettings();

@@ -66,7 +66,7 @@ class _DateCalcPageState extends State<DateCalcPage>
     // 农历数据本身是中文，只有前缀标签和星期跟随界面语言。
     final l = info.lunar;
     return '${AppLocalizations.of(context)!.calcLunar}'
-        '${l.getYearInChinese()}年${l.getMonthInChinese()}'
+        '${l.getYearInChinese()}年${l.getMonthInChinese()}月'
         '${l.getDayInChinese()} ${DateFormat.EEEE(loc).format(date)}';
   }
 

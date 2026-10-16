@@ -380,6 +380,11 @@
   "calOtherCalendarsTitle": "Other calendars",
   "calTao": "Taoist calendar",
   "calFoto": "Buddhist calendar",
+  "calIslamic": "Islamic calendar",
+  "calHebrew": "Hebrew calendar",
+  "calPersian": "Persian calendar",
+  "calSaka": "Indian calendar (Saka)",
+  "calJapanese": "Japanese calendar",
   "commonNone": "None",
 
   "scanTitlePair": "Pair by QR",

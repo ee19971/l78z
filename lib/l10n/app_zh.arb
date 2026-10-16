@@ -380,6 +380,11 @@
   "calOtherCalendarsTitle": "其他历法",
   "calTao": "道历",
   "calFoto": "佛历",
+  "calIslamic": "伊斯兰历",
+  "calHebrew": "希伯来历",
+  "calPersian": "波斯历",
+  "calSaka": "印度历",
+  "calJapanese": "日本历",
   "commonNone": "无",
 
   "scanTitlePair": "扫码配对",

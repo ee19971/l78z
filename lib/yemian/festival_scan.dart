@@ -122,7 +122,7 @@ String festivalDateLabel(
     return '${DateFormat.yMMMd(loc).format(d)} $week';
   }
   final lunar = info.lunar;
-  return '${l10n.calcLunar}${lunar.getYearInChinese()}年${lunar.getMonthInChinese()}'
+  return '${l10n.calcLunar}${lunar.getYearInChinese()}年${lunar.getMonthInChinese()}月'
       '${lunar.getDayInChinese()}(${d.month}.${d.day}) $week';
 }
 

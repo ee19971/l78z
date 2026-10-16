@@ -312,7 +312,7 @@ class _TodayCard extends StatelessWidget {
             // 只有标签跟随界面语言。
             _row(context, l10n.mainLunar,
                 '${lunar.getYearInChinese()}年'
-                '${lunar.getMonthInChinese()}${info.lunarDayText}'),
+                '${lunar.getMonthInChinese()}月${info.lunarDayText}'),
             _row(context, l10n.mainGanZhi, info.ganZhiText),
             _row(context, l10n.mainZodiac, lunar.getYearShengXiao()),
             _row(context, l10n.mainJieQi, jieQiText(info.jieQi, l10n)),

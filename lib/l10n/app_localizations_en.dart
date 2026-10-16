@@ -694,6 +694,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calFoto => 'Buddhist calendar';
 
   @override
+  String get calIslamic => 'Islamic calendar';
+
+  @override
+  String get calHebrew => 'Hebrew calendar';
+
+  @override
+  String get calPersian => 'Persian calendar';
+
+  @override
+  String get calSaka => 'Indian calendar (Saka)';
+
+  @override
+  String get calJapanese => 'Japanese calendar';
+
+  @override
   String get commonNone => 'None';
 
   @override

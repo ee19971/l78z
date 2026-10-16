@@ -23,8 +23,20 @@ class CalendarPrefs {
 
   static const String _kCellLabelMode = 'calendar_cell_label_mode';
   static const String _kWeekStartMonday = 'calendar_week_start_monday';
-  static const String _kShowTao = 'calendar_show_tao';
-  static const String _kShowFoto = 'calendar_show_foto';
+  static const String _kOtherCalendars = 'calendar_other_calendars';
+
+  /// 「其他历法」区的全部开关键，顺序即设置面板与详情面板的显示顺序。
+  /// 前两个由农历换算（lunar 包的 Tao/Foto），后五个由 icu_kit 换算
+  /// （见 other_calendars.dart）。
+  static const List<String> otherCalendarKeys = [
+    'tao',
+    'foto',
+    'islamic',
+    'hebrew',
+    'persian',
+    'saka',
+    'japanese',
+  ];
 
   /// 格子小字档位，默认节气 + 农历日。
   static CellLabelMode cellLabelMode = CellLabelMode.jieqiLunar;
@@ -32,13 +44,13 @@ class CalendarPrefs {
   /// 周起始日是否为周一；默认周日。
   static bool weekStartMonday = false;
 
-  /// 详情面板是否显示道历行；默认关，想看再开。
-  static bool showTao = false;
+  /// 详情面板当前开启的历法键；默认全关，想看再开。
+  static Set<String> shownCalendars = {};
 
-  /// 详情面板是否显示佛历行；默认关。
-  static bool showFoto = false;
+  /// [key] 对应的历法行是否显示。
+  static bool shows(String key) => shownCalendars.contains(key);
 
-  /// 首屏读一次；脏值一律回落默认。
+  /// 首屏读一次；脏值一律回落默认（不在 [otherCalendarKeys] 里的直接丢弃）。
   static Future<void> load() async {
     final sp = await SharedPreferences.getInstance();
     cellLabelMode = switch (sp.getString(_kCellLabelMode)) {
@@ -48,8 +60,9 @@ class CalendarPrefs {
       _ => CellLabelMode.jieqiLunar,
     };
     weekStartMonday = sp.getBool(_kWeekStartMonday) ?? false;
-    showTao = sp.getBool(_kShowTao) ?? false;
-    showFoto = sp.getBool(_kShowFoto) ?? false;
+    shownCalendars = {
+      ...?sp.getStringList(_kOtherCalendars)?.where(otherCalendarKeys.contains),
+    };
   }
 
   static Future<void> setCellLabelMode(CellLabelMode mode) async {
@@ -64,15 +77,15 @@ class CalendarPrefs {
     await sp.setBool(_kWeekStartMonday, value);
   }
 
-  static Future<void> setShowTao(bool value) async {
-    showTao = value;
+  /// 开/关某个历法行。
+  static Future<void> setShown(String key, bool value) async {
+    if (!otherCalendarKeys.contains(key)) return;
+    if (value) {
+      shownCalendars.add(key);
+    } else {
+      shownCalendars.remove(key);
+    }
     final sp = await SharedPreferences.getInstance();
-    await sp.setBool(_kShowTao, value);
-  }
-
-  static Future<void> setShowFoto(bool value) async {
-    showFoto = value;
-    final sp = await SharedPreferences.getInstance();
-    await sp.setBool(_kShowFoto, value);
+    await sp.setStringList(_kOtherCalendars, shownCalendars.toList());
   }
 }

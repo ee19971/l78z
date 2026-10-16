@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import 'calendar_prefs.dart';
 import 'festival_names.dart';
 import 'festivals.dart';
+import 'other_calendars.dart';
 
 /// 视图层级：年 > 月 > 周 > 日
 /// 双指捏合 → 换粗一档（日→周→月→年）；双指外扩 → 换细一档（年→月→周→日）
@@ -493,33 +494,26 @@ class _CalendarPageState extends State<CalendarPage> {
                 ),
               ),
               const Divider(height: 16),
-              // 其他历法：道历/佛历按需勾选，勾上才在详情面板多显示一行。
+              // 其他历法：逐个勾选，勾上才在详情面板多显示一行。
+              // 七行共用一套键（CalendarPrefs.otherCalendarKeys），标签与
+              // 详情面板走同一个函数，设置里看到什么详情里就是什么。
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Text(l10n.calOtherCalendarsTitle,
                     style: Theme.of(ctx).textTheme.labelMedium
                         ?.copyWith(color: Theme.of(ctx).hintColor)),
               ),
-              SwitchListTile(
-                dense: true,
-                title: Text(l10n.calTao),
-                value: CalendarPrefs.showTao,
-                onChanged: (v) async {
-                  await CalendarPrefs.setShowTao(v);
-                  if (ctx.mounted) setSheetState(() {});
-                  if (mounted) setState(() {});
-                },
-              ),
-              SwitchListTile(
-                dense: true,
-                title: Text(l10n.calFoto),
-                value: CalendarPrefs.showFoto,
-                onChanged: (v) async {
-                  await CalendarPrefs.setShowFoto(v);
-                  if (ctx.mounted) setSheetState(() {});
-                  if (mounted) setState(() {});
-                },
-              ),
+              for (final key in CalendarPrefs.otherCalendarKeys)
+                SwitchListTile(
+                  dense: true,
+                  title: Text(_otherCalendarLabel(key, l10n)),
+                  value: CalendarPrefs.shows(key),
+                  onChanged: (v) async {
+                    await CalendarPrefs.setShown(key, v);
+                    if (ctx.mounted) setSheetState(() {});
+                    if (mounted) setState(() {});
+                  },
+                ),
               const SizedBox(height: 8),
             ],
             ),
@@ -818,6 +812,17 @@ class _CalendarPageState extends State<CalendarPage> {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    // ICU 换算的五个历法：开关打开且换算成功才多一行；引擎缺失或
+    // 换算异常时 icuCalendarText 返回 null，该行静默缺席（不崩面板）。
+    final icuRows = <Widget>[];
+    for (final key in kIcuCalendarKeys.keys) {
+      if (!CalendarPrefs.shows(key)) continue;
+      final text = icuCalendarText(key, date);
+      if (text != null) {
+        icuRows.add(_detailRow(_otherCalendarLabel(key, l10n), text));
+      }
+    }
+
     final rows = <Widget>[
       if (showDate) ...[
         Text(_dateFormat.format(date), style: textTheme.titleMedium),
@@ -836,15 +841,17 @@ class _CalendarPageState extends State<CalendarPage> {
       _detailRow(
         l10n.mainLunar,
         '${info.lunar.getYearInChinese()}年'
-        '${info.lunar.getMonthInChinese()}${info.lunarDayText}',
+        '${info.lunar.getMonthInChinese()}月${info.lunarDayText}',
       ),
       _detailRow(l10n.mainGanZhi, info.ganZhiText),
       _detailRow(l10n.mainZodiac, info.lunar.getYearShengXiao()),
-      // 其他历法（道历/佛历）按设置开关逐行追加，关着就一行都不占地方。
-      if (CalendarPrefs.showTao)
+      // 其他历法按设置开关逐行追加，关着就一行都不占地方。
+      // 道历/佛历由农历换算，ICU 五个历法来自上面的 icuRows。
+      if (CalendarPrefs.shows('tao'))
         _detailRow(l10n.calTao, _otherCalendarText(info, isTao: true)),
-      if (CalendarPrefs.showFoto)
+      if (CalendarPrefs.shows('foto'))
         _detailRow(l10n.calFoto, _otherCalendarText(info, isTao: false)),
+      ...icuRows,
       _detailRow(l10n.calDistance, _distanceText(date)),
       if (CalendarPrefs.cellLabelMode == CellLabelMode.full &&
           (info.hasFestival || info.hasJieQi))
@@ -870,6 +877,19 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
+  /// 「其他历法」区各键的行标签；设置面板与详情面板共用，保证两处一致。
+  static String _otherCalendarLabel(String key, AppLocalizations l10n) =>
+      switch (key) {
+        'tao' => l10n.calTao,
+        'foto' => l10n.calFoto,
+        'islamic' => l10n.calIslamic,
+        'hebrew' => l10n.calHebrew,
+        'persian' => l10n.calPersian,
+        'saka' => l10n.calSaka,
+        'japanese' => l10n.calJapanese,
+        _ => key,
+      };
+
   /// 其他历法（道历/佛历）的整行文本，如 `道历 4723年九月初九`。
   ///
   /// 两者都由农历换算而来（`Tao.fromLunar` / `Foto.fromLunar`），
@@ -878,10 +898,10 @@ class _CalendarPageState extends State<CalendarPage> {
     final lunar = info.lunar;
     if (isTao) {
       final tao = Tao.fromLunar(lunar);
-      return '${tao.getYear()}年${tao.getMonthInChinese()}${tao.getDayInChinese()}';
+      return '${tao.getYear()}年${tao.getMonthInChinese()}月${tao.getDayInChinese()}';
     }
     final foto = Foto.fromLunar(lunar);
-    return '${foto.getYear()}年${foto.getMonthInChinese()}${foto.getDayInChinese()}';
+    return '${foto.getYear()}年${foto.getMonthInChinese()}月${foto.getDayInChinese()}';
   }
 
   /// 某个日期距今天多少天；用日历天差，不看时区和小时。

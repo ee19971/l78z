@@ -93,10 +93,7 @@ void main() {
     // 默认关：详情栏里没有道历/佛历两个标签。
     SharedPreferences.setMockInitialValues({});
     await CalendarPrefs.load();
-    addTearDown(() async {
-      CalendarPrefs.showTao = false;
-      CalendarPrefs.showFoto = false;
-    });
+    addTearDown(() => CalendarPrefs.shownCalendars.clear());
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('zh', 'CN'),
@@ -112,8 +109,7 @@ void main() {
     // 注意 CalendarPage 的 initState 会异步 CalendarPrefs.load() 覆盖内存值，
     // 所以这里走 SharedPreferences 落盘值，而不是直接改静态字段。
     SharedPreferences.setMockInitialValues({
-      'calendar_show_tao': true,
-      'calendar_show_foto': true,
+      'calendar_other_calendars': ['tao', 'foto'],
     });
     await CalendarPrefs.load();
     await tester.pumpWidget(

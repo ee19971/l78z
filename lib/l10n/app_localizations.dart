@@ -1328,6 +1328,36 @@ abstract class AppLocalizations {
   /// **'佛历'**
   String get calFoto;
 
+  /// No description provided for @calIslamic.
+  ///
+  /// In zh, this message translates to:
+  /// **'伊斯兰历'**
+  String get calIslamic;
+
+  /// No description provided for @calHebrew.
+  ///
+  /// In zh, this message translates to:
+  /// **'希伯来历'**
+  String get calHebrew;
+
+  /// No description provided for @calPersian.
+  ///
+  /// In zh, this message translates to:
+  /// **'波斯历'**
+  String get calPersian;
+
+  /// No description provided for @calSaka.
+  ///
+  /// In zh, this message translates to:
+  /// **'印度历'**
+  String get calSaka;
+
+  /// No description provided for @calJapanese.
+  ///
+  /// In zh, this message translates to:
+  /// **'日本历'**
+  String get calJapanese;
+
   /// No description provided for @commonNone.
   ///
   /// In zh, this message translates to:

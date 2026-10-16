@@ -689,6 +689,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calFoto => '佛历';
 
   @override
+  String get calIslamic => '伊斯兰历';
+
+  @override
+  String get calHebrew => '希伯来历';
+
+  @override
+  String get calPersian => '波斯历';
+
+  @override
+  String get calSaka => '印度历';
+
+  @override
+  String get calJapanese => '日本历';
+
+  @override
   String get commonNone => '无';
 
   @override
