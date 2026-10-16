@@ -25,8 +25,7 @@ $pfxPath = Join-Path $certDir 'l78z-dev.pfx'
 Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password $secPwd | Out-Null
 Write-Host "已生成 $pfxPath"
 
-# msix 打包会查询 Cert:\CurrentUser\Root 是否已有同 Subject 证书，没有就弹
-# 「是否安装证书」交互提示——CI 无 TTY 读到 null 直接崩。这里主动导入
-# CurrentUser\Root（用户级存储，无需管理员，重复导入幂等），本地与 CI 一致。
-Import-PfxCertificate -FilePath $pfxPath -Password $secPwd -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
-Write-Host "已导入 CurrentUser\Root（msix 签名免交互）"
+# 注意：不要在这里把 pfx 导入 Cert:\CurrentUser\Root 来规避 msix 的「安装证书」
+# 交互提示——CI runner（交互式会话）上 Import-PfxCertificate 导入 Root 会弹
+# 信任确认 UI 并永久挂起（三跑实测 step5 卡 70+ 分钟）。msix 的交互提示改由
+# CI 在构建步骤管道喂 "n" 跳过（见 workflow 的构建 MSIX 步骤）。

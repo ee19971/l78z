@@ -59,7 +59,11 @@ jobs:
         run: powershell -NoProfile -File tool/new_dev_cert.ps1
 
       - name: 构建 MSIX
-        run: dart run msix:create
+        # msix 打包后会交互询问是否把签名证书装入本机存储（CI 无 TTY 时
+        # Prompter 读到 null 直接崩）；管道喂 n 跳过——签名用的是证书文件
+        # 本身，不受影响。不要改回导入 Root 的方案（runner 会弹 UI 挂死）
+        timeout-minutes: 30
+        run: '"n" | dart run msix:create'
 
       - name: 重命名为带版本号的产物
         shell: pwsh
