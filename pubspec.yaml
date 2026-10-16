@@ -1,8 +1,12 @@
 name: l78z
-description: "A new Flutter project."
+description: "互传助手：跨平台局域网文件/文本互传与实用工具合集（二维码、OCR、农历日历等），Flutter + Rust 实现。"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# 源码仓库（GitHub 主仓库，Gitee 同步镜像见 README）。
+repository: https://github.com/ee19971/l78z
+homepage: https://github.com/ee19971/l78z
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43

@@ -1,0 +1,76 @@
+# 打 tag（v*）发布：构建 Android APK 与 Windows MSIX 并挂到 GitHub Release。
+#
+# OCR 大模型不进安装包（应用内首次使用时下载），CI 不需要任何模型文件；
+# dev 签名证书不入库，由 CI 现场用 tool/new_dev_cert.ps1 生成。
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.6
+          channel: stable
+          cache: true
+
+      - name: 依赖
+        run: flutter pub get
+
+      - name: 构建 APK（仅 arm64）
+        run: flutter build apk --release --target-platform android-arm64
+
+      - name: 重命名为带版本号的产物
+        run: |
+          VER=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | cut -d'+' -f1)
+          cp build/app/outputs/flutter-apk/app-release.apk "互传助手-${VER}.apk"
+          echo "VERSION=${VER}" >> "$GITHUB_ENV"
+
+      - name: 挂到 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: 互传助手-*.apk
+
+  msix:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.6
+          channel: stable
+          cache: true
+
+      - name: 依赖
+        run: flutter pub get
+
+      - name: 生成开发签名证书
+        run: powershell -File tool/new_dev_cert.ps1
+
+      - name: 构建 MSIX
+        run: dart run msix:create
+
+      - name: 重命名为带版本号的产物
+        shell: pwsh
+        run: |
+          $m = Select-String -Path pubspec.yaml -Pattern '^version:\s*(\S+)' | Select-Object -First 1
+          $ver = $m.Matches[0].Groups[1].Value.Split('+')[0]
+          $msix = Get-ChildItem build -Recurse -Filter '*.msix' | Select-Object -First 1
+          if (-not $msix) { throw '未找到 msix 产物' }
+          Copy-Item $msix.FullName "互传助手-$ver.msix" -Force
+
+      - name: 挂到 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: 互传助手-*.msix

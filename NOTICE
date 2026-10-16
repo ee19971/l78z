@@ -20,14 +20,12 @@ Rust 生态
 
 Flutter / Dart 生态
   flutter_rust_bridge, lunar, file_picker, freezed_annotation,
-  json_annotation, package_info_plus
-  Licensed under the MIT License
-
-  path_provider, intl
-  Licensed under the BSD-3-Clause License
-
+  json_annotation, package_info_plus, timezone, crypto, icu_kit,
   cupertino_icons
   Licensed under the MIT License
+
+  path_provider, intl, shared_preferences, http
+  Licensed under the BSD-3-Clause License
 
 ---
 

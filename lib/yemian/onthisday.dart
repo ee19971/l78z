@@ -7,6 +7,7 @@
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../l10n/app_localizations.dart';
@@ -107,7 +108,11 @@ Future<Map<String, OnThisDaySection>> loadOnThisDay({String lang = 'zh'}) async 
     final source = await rootBundle.loadString(
       key == 'en' ? kOnThisDayAssetPathEn : kOnThisDayAssetPath,
     );
-    final parsed = parseOnThisDayJson(source);
+    // 中文 5MB、英文 11MB 的 JSON：jsonDecode 加上组装 typed 对象在主
+    // isolate 上要卡住 UI 数百毫秒（debug 下更久），丢到后台 isolate。
+    // loadString 内部对大文件的 utf8 解码本来就走 isolate，这里接管
+    // 真正的大头——解析本身。
+    final parsed = await compute(parseOnThisDayJson, source);
     _cached[key] = parsed;
     return parsed;
   } catch (_) {

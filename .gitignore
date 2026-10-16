@@ -55,3 +55,7 @@ rust/target/
 assets/ocr/PP-OCRv6_det_medium.onnx
 assets/ocr/PP-OCRv6_rec_medium.onnx
 assets/ocr/*.rar
+
+# 代码签名证书不入库：本地首次打 MSIX 前运行
+# `powershell -File tool/new_dev_cert.ps1` 生成，CI 用同一脚本现场生成。
+certs/*.pfx
